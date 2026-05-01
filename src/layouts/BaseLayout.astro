@@ -25,6 +25,16 @@ const seoProps = Astro.props;
     <meta name="theme-color" content="#4F46E5" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <script is:inline>
+      (function () {
+        const stored = localStorage.getItem('theme');
+        const prefers = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = stored || (prefers ? 'dark' : 'light');
+        document.documentElement.dataset.theme = theme;
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', theme === 'dark' ? '#0F172A' : '#FFFFFF');
+      })();
+    </script>
     <SEO {...seoProps} />
   </head>
   <body>

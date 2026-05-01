@@ -54,27 +54,30 @@
   --transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-primary: #818CF8;
-    --color-primary-hover: #A5B4FC;
-    --color-primary-light: #1E1B4B;
-    --color-primary-muted: #312E81;
+[data-theme="dark"] {
+  --color-primary: #818CF8;
+  --color-primary-hover: #A5B4FC;
+  --color-primary-light: #1E1B4B;
+  --color-primary-muted: #312E81;
 
-    --color-bg: #0F172A;
-    --color-bg-secondary: #1E293B;
-    --color-bg-card: #1E293B;
-    --color-border: #334155;
-    --color-border-strong: #475569;
+  --color-bg: #0F172A;
+  --color-bg-secondary: #1E293B;
+  --color-bg-card: #1E293B;
+  --color-border: #334155;
+  --color-border-strong: #475569;
 
-    --color-text: #F1F5F9;
-    --color-text-secondary: #CBD5E1;
-    --color-text-muted: #64748B;
+  --color-text: #F1F5F9;
+  --color-text-secondary: #CBD5E1;
+  --color-text-muted: #64748B;
 
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
-  }
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+}
+
+[data-theme="dark"] .badge-new {
+  background: #14532D;
+  color: #86EFAC;
 }
 
 /* =========================================================
@@ -277,6 +280,17 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--color-text);
   background-color: var(--color-bg-secondary);
 }
+
+.theme-toggle .icon-sun,
+.theme-toggle .icon-moon {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+.theme-toggle .icon-sun { display: none; }
+.theme-toggle .icon-moon { display: block; }
 
 .mobile-menu-btn {
   display: flex;
@@ -646,13 +660,6 @@ h1, h2, h3, h4, h5, h6 {
 .badge-new {
   background: #DCFCE7;
   color: #15803D;
-}
-
-@media (prefers-color-scheme: dark) {
-  .badge-new {
-    background: #14532D;
-    color: #86EFAC;
-  }
 }
 
 .badge-soon {
