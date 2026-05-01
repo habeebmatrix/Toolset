@@ -29,31 +29,19 @@ const faqs = [
 ---
 
 <ToolLayout tool={tool} faqs={faqs}>
-  <div class="calculator" role="region" aria-label="Percentage calculator">
-    <!-- Tab bar -->
-    <div class="calc-tabs" role="tablist" aria-label="Calculation modes">
-      <button class="calc-tab active" role="tab" aria-selected="true"  aria-controls="panel-of"       id="tab-of"       data-panel="of">X% of Y</button>
-      <button class="calc-tab"        role="tab" aria-selected="false" aria-controls="panel-what-pct" id="tab-what-pct" data-panel="what-pct">What % is X of Y?</button>
-      <button class="calc-tab"        role="tab" aria-selected="false" aria-controls="panel-change"   id="tab-change"   data-panel="change">% Change</button>
-      <button class="calc-tab"        role="tab" aria-selected="false" aria-controls="panel-add-sub"  id="tab-add-sub"  data-panel="add-sub">Add / Subtract %</button>
-    </div>
+  <div class="calc-cards" role="region" aria-label="Percentage calculators">
 
-    <!-- Panel 1: X% of Y -->
-    <div class="calc-panel active" id="panel-of" role="tabpanel" aria-labelledby="tab-of">
-      <div class="field-group">
-        <div class="field-row">
-          <div class="field">
-            <label for="of-pct">Percentage</label>
-            <input class="input" type="number" id="of-pct" placeholder="e.g. 20" min="0" step="any" />
-          </div>
-          <span class="field-sep">% of</span>
-          <div class="field">
-            <label for="of-val">Value</label>
-            <input class="input" type="number" id="of-val" placeholder="e.g. 150" step="any" />
-          </div>
-        </div>
+    <!-- Card 1: Find value -->
+    <div class="calc-card">
+      <p class="calc-card-title">Find a value</p>
+      <div class="calc-sentence" aria-label="What is blank percent of blank?">
+        <span>What is</span>
+        <input class="input-inline" type="number" id="of-pct" placeholder="e.g. 20" min="0" step="any" aria-label="Percentage" />
+        <span>% of</span>
+        <input class="input-inline" type="number" id="of-val" placeholder="e.g. 150" step="any" aria-label="Value" />
+        <span>?</span>
       </div>
-      <div class="calc-actions">
+      <div class="calc-card-actions">
         <button class="btn btn-primary" id="calc-of">Calculate</button>
         <button class="btn btn-secondary" id="reset-of">Reset</button>
       </div>
@@ -64,22 +52,16 @@ const faqs = [
       </div>
     </div>
 
-    <!-- Panel 2: What % is X of Y -->
-    <div class="calc-panel" id="panel-what-pct" role="tabpanel" aria-labelledby="tab-what-pct">
-      <div class="field-group">
-        <div class="field-row">
-          <div class="field">
-            <label for="wp-x">Value (X)</label>
-            <input class="input" type="number" id="wp-x" placeholder="e.g. 30" step="any" />
-          </div>
-          <span class="field-sep">is what % of</span>
-          <div class="field">
-            <label for="wp-y">Total (Y)</label>
-            <input class="input" type="number" id="wp-y" placeholder="e.g. 150" step="any" />
-          </div>
-        </div>
+    <!-- Card 2: Find percentage -->
+    <div class="calc-card">
+      <p class="calc-card-title">Find the percentage</p>
+      <div class="calc-sentence" aria-label="Blank is what percent of blank?">
+        <input class="input-inline" type="number" id="wp-x" placeholder="e.g. 30" step="any" aria-label="Value" />
+        <span>is what % of</span>
+        <input class="input-inline" type="number" id="wp-y" placeholder="e.g. 150" step="any" aria-label="Total" />
+        <span>?</span>
       </div>
-      <div class="calc-actions">
+      <div class="calc-card-actions">
         <button class="btn btn-primary" id="calc-wp">Calculate</button>
         <button class="btn btn-secondary" id="reset-wp">Reset</button>
       </div>
@@ -90,22 +72,17 @@ const faqs = [
       </div>
     </div>
 
-    <!-- Panel 3: % Change -->
-    <div class="calc-panel" id="panel-change" role="tabpanel" aria-labelledby="tab-change">
-      <div class="field-group">
-        <div class="field-row">
-          <div class="field">
-            <label for="ch-from">Original value</label>
-            <input class="input" type="number" id="ch-from" placeholder="e.g. 80" step="any" />
-          </div>
-          <span class="field-sep">→</span>
-          <div class="field">
-            <label for="ch-to">New value</label>
-            <input class="input" type="number" id="ch-to" placeholder="e.g. 100" step="any" />
-          </div>
-        </div>
+    <!-- Card 3: Percentage change -->
+    <div class="calc-card">
+      <p class="calc-card-title">Percentage change</p>
+      <div class="calc-sentence" aria-label="What is the percentage change from blank to blank?">
+        <span>What is the % change from</span>
+        <input class="input-inline" type="number" id="ch-from" placeholder="e.g. 80" step="any" aria-label="Original value" />
+        <span>to</span>
+        <input class="input-inline" type="number" id="ch-to" placeholder="e.g. 100" step="any" aria-label="New value" />
+        <span>?</span>
       </div>
-      <div class="calc-actions">
+      <div class="calc-card-actions">
         <button class="btn btn-primary" id="calc-ch">Calculate</button>
         <button class="btn btn-secondary" id="reset-ch">Reset</button>
       </div>
@@ -116,19 +93,16 @@ const faqs = [
       </div>
     </div>
 
-    <!-- Panel 4: Add / Subtract % -->
-    <div class="calc-panel" id="panel-add-sub" role="tabpanel" aria-labelledby="tab-add-sub">
-      <div class="field-group">
-        <div class="field">
-          <label for="as-val">Value</label>
-          <input class="input" type="number" id="as-val" placeholder="e.g. 200" step="any" />
-        </div>
-        <div class="field">
-          <label for="as-pct">Percentage (%)</label>
-          <input class="input" type="number" id="as-pct" placeholder="e.g. 15" min="0" step="any" />
-        </div>
+    <!-- Card 4: Add / Subtract -->
+    <div class="calc-card">
+      <p class="calc-card-title">Add or subtract a percentage</p>
+      <div class="calc-sentence" aria-label="Add or subtract blank percent from blank">
+        <span>Add or subtract</span>
+        <input class="input-inline" type="number" id="as-pct" placeholder="e.g. 15" min="0" step="any" aria-label="Percentage" />
+        <span>% from</span>
+        <input class="input-inline" type="number" id="as-val" placeholder="e.g. 200" step="any" aria-label="Value" />
       </div>
-      <div class="calc-actions">
+      <div class="calc-card-actions">
         <button class="btn btn-primary" id="calc-add">Add %</button>
         <button class="btn btn-primary" id="calc-sub" style="background:var(--color-text-secondary)">Subtract %</button>
         <button class="btn btn-secondary" id="reset-as">Reset</button>
@@ -139,6 +113,7 @@ const faqs = [
         <p class="result-formula" id="result-as-formula"></p>
       </div>
     </div>
+
   </div>
 
   <!-- Explainer -->
@@ -172,83 +147,57 @@ const faqs = [
 </ToolLayout>
 
 <script>
-  // ── Helpers ──────────────────────────────────────────────
   function fmt(n: number, decimals = 4): string {
-    const rounded = parseFloat(n.toFixed(decimals));
-    return rounded.toLocaleString('en-US', { maximumFractionDigits: decimals });
+    return parseFloat(n.toFixed(decimals)).toLocaleString('en-US', { maximumFractionDigits: decimals });
   }
 
   function show(boxId: string, value: string, formula: string) {
     const box = document.getElementById(boxId)!;
-    box.querySelector<HTMLElement>(`#${boxId}-value`)!.textContent = value;
-    box.querySelector<HTMLElement>(`#${boxId}-formula`)!.textContent = formula;
+    (box.querySelector(`#${boxId}-value`) as HTMLElement).textContent = value;
+    (box.querySelector(`#${boxId}-formula`) as HTMLElement).textContent = formula;
     box.classList.add('visible');
   }
 
-  function hide(boxId: string) {
+  function hideResult(boxId: string) {
     document.getElementById(boxId)!.classList.remove('visible');
   }
 
-  function reset(fields: string[], boxId: string) {
-    fields.forEach((id) => {
-      const el = document.getElementById(id) as HTMLInputElement;
-      if (el) el.value = '';
-    });
-    hide(boxId);
+  function clearFields(fields: string[], boxId: string) {
+    fields.forEach((id) => ((document.getElementById(id) as HTMLInputElement).value = ''));
+    hideResult(boxId);
   }
 
-  function val(id: string): number {
+  function num(id: string): number {
     return parseFloat((document.getElementById(id) as HTMLInputElement).value);
   }
 
-  // ── Tabs ─────────────────────────────────────────────────
-  document.querySelectorAll<HTMLButtonElement>('.calc-tab').forEach((tab) => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.calc-tab').forEach((t) => {
-        t.classList.remove('active');
-        t.setAttribute('aria-selected', 'false');
-      });
-      document.querySelectorAll('.calc-panel').forEach((p) => p.classList.remove('active'));
-
-      tab.classList.add('active');
-      tab.setAttribute('aria-selected', 'true');
-      document.getElementById(`panel-${tab.dataset.panel!}`)!.classList.add('active');
-    });
-  });
-
-  // ── Panel 1: X% of Y ─────────────────────────────────────
+  // ── Card 1: Find value ────────────────────────────────────
   function calcOf() {
-    const pct = val('of-pct'), v = val('of-val');
+    const pct = num('of-pct'), v = num('of-val');
     if (isNaN(pct) || isNaN(v)) return;
     const result = (pct / 100) * v;
-    show('result-of', `${fmt(result)}`, `(${fmt(pct)} ÷ 100) × ${fmt(v)} = ${fmt(result)}`);
+    show('result-of', fmt(result), `(${fmt(pct)} ÷ 100) × ${fmt(v)} = ${fmt(result)}`);
   }
 
   document.getElementById('calc-of')!.addEventListener('click', calcOf);
-  document.getElementById('reset-of')!.addEventListener('click', () => {
-    reset(['of-pct', 'of-val'], 'result-of');
-  });
+  document.getElementById('reset-of')!.addEventListener('click', () => clearFields(['of-pct', 'of-val'], 'result-of'));
+  ['of-pct', 'of-val'].forEach((id) => document.getElementById(id)!.addEventListener('input', calcOf));
 
-  // Live update
-  ['of-pct', 'of-val'].forEach((id) =>
-    document.getElementById(id)!.addEventListener('input', calcOf)
-  );
-
-  // ── Panel 2: What % is X of Y ─────────────────────────────
+  // ── Card 2: Find percentage ───────────────────────────────
   function calcWp() {
-    const x = val('wp-x'), y = val('wp-y');
+    const x = num('wp-x'), y = num('wp-y');
     if (isNaN(x) || isNaN(y) || y === 0) return;
     const result = (x / y) * 100;
     show('result-wp', `${fmt(result)}%`, `(${fmt(x)} ÷ ${fmt(y)}) × 100 = ${fmt(result)}%`);
   }
 
   document.getElementById('calc-wp')!.addEventListener('click', calcWp);
-  document.getElementById('reset-wp')!.addEventListener('click', () => reset(['wp-x', 'wp-y'], 'result-wp'));
+  document.getElementById('reset-wp')!.addEventListener('click', () => clearFields(['wp-x', 'wp-y'], 'result-wp'));
   ['wp-x', 'wp-y'].forEach((id) => document.getElementById(id)!.addEventListener('input', calcWp));
 
-  // ── Panel 3: % Change ─────────────────────────────────────
+  // ── Card 3: % Change ──────────────────────────────────────
   function calcCh() {
-    const from = val('ch-from'), to = val('ch-to');
+    const from = num('ch-from'), to = num('ch-to');
     if (isNaN(from) || isNaN(to) || from === 0) return;
     const change = ((to - from) / Math.abs(from)) * 100;
     const sign = change >= 0 ? '+' : '';
@@ -256,36 +205,41 @@ const faqs = [
     show(
       'result-ch',
       `${sign}${fmt(change)}%`,
-      `((${fmt(to)} − ${fmt(from)}) ÷ ${fmt(Math.abs(from))}) × 100 = ${sign}${fmt(change)}% ${direction}`
+      `((${fmt(to)} − ${fmt(from)}) ÷ ${fmt(Math.abs(from))}) × 100 = ${sign}${fmt(change)}% ${direction}`,
     );
     const box = document.getElementById('result-ch')!;
-    box.style.borderColor = change >= 0 ? 'var(--color-success)' : 'var(--color-error)';
-    box.style.background = change >= 0 ? 'color-mix(in srgb, var(--color-success) 10%, var(--color-bg))' : 'color-mix(in srgb, var(--color-error) 10%, var(--color-bg))';
-    box.querySelector<HTMLElement>('.result-label')!.style.color = change >= 0 ? 'var(--color-success)' : 'var(--color-error)';
+    const isIncrease = change >= 0;
+    box.style.borderColor     = isIncrease ? 'var(--color-success)' : 'var(--color-error)';
+    box.style.background      = isIncrease
+      ? 'color-mix(in srgb, var(--color-success) 10%, var(--color-bg))'
+      : 'color-mix(in srgb, var(--color-error) 10%, var(--color-bg))';
+    (box.querySelector('.result-label') as HTMLElement).style.color =
+      isIncrease ? 'var(--color-success)' : 'var(--color-error)';
   }
 
   document.getElementById('calc-ch')!.addEventListener('click', calcCh);
   document.getElementById('reset-ch')!.addEventListener('click', () => {
-    reset(['ch-from', 'ch-to'], 'result-ch');
+    clearFields(['ch-from', 'ch-to'], 'result-ch');
     const box = document.getElementById('result-ch')!;
-    box.style.borderColor = '';
-    box.style.background = '';
-    box.querySelector<HTMLElement>('.result-label')!.style.color = '';
+    box.style.borderColor = box.style.background = '';
+    (box.querySelector('.result-label') as HTMLElement).style.color = '';
   });
   ['ch-from', 'ch-to'].forEach((id) => document.getElementById(id)!.addEventListener('input', calcCh));
 
-  // ── Panel 4: Add / Subtract % ─────────────────────────────
+  // ── Card 4: Add / Subtract % ──────────────────────────────
   function calcAs(mode: 'add' | 'sub') {
-    const v = val('as-val'), pct = val('as-pct');
+    const v = num('as-val'), pct = num('as-pct');
     if (isNaN(v) || isNaN(pct)) return;
     const result = mode === 'add' ? v * (1 + pct / 100) : v * (1 - pct / 100);
-    const op = mode === 'add' ? '+' : '−';
-    const factor = mode === 'add' ? `1 + ${fmt(pct)}/100 = ${fmt(1 + pct/100)}` : `1 − ${fmt(pct)}/100 = ${fmt(1 - pct/100)}`;
-    document.getElementById('result-as-label')!.textContent = mode === 'add' ? `After adding ${fmt(pct)}%` : `After subtracting ${fmt(pct)}%`;
-    show('result-as', `${fmt(result)}`, `${fmt(v)} × (${factor}) = ${fmt(result)}`);
+    const factor = mode === 'add'
+      ? `1 + ${fmt(pct)}/100 = ${fmt(1 + pct / 100)}`
+      : `1 − ${fmt(pct)}/100 = ${fmt(1 - pct / 100)}`;
+    (document.getElementById('result-as-label') as HTMLElement).textContent =
+      mode === 'add' ? `After adding ${fmt(pct)}%` : `After subtracting ${fmt(pct)}%`;
+    show('result-as', fmt(result), `${fmt(v)} × (${factor}) = ${fmt(result)}`);
   }
 
   document.getElementById('calc-add')!.addEventListener('click', () => calcAs('add'));
   document.getElementById('calc-sub')!.addEventListener('click', () => calcAs('sub'));
-  document.getElementById('reset-as')!.addEventListener('click', () => reset(['as-val', 'as-pct'], 'result-as'));
+  document.getElementById('reset-as')!.addEventListener('click', () => clearFields(['as-val', 'as-pct'], 'result-as'));
 </script>
