@@ -1,0 +1,67 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection, getEntry } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map((post) => ({ params: { slug: post.slug }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.data.title,
+  description: post.data.description,
+  author: { '@type': 'Organization', name: post.data.author },
+  datePublished: post.data.pubDate.toISOString(),
+  dateModified: (post.data.updatedDate ?? post.data.pubDate).toISOString(),
+  url: `https://toolset.dev/blog/${post.slug}/`,
+};
+---
+
+<BaseLayout
+  title={post.data.title}
+  description={post.data.description}
+  ogType="article"
+  jsonLd={jsonLd}
+>
+  <main id="main-content">
+    <div class="container" style="padding-block:2.5rem">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <svg class="breadcrumb-sep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+        <a href="/blog/">Blog</a>
+        <svg class="breadcrumb-sep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+        <span aria-current="page">{post.data.title}</span>
+      </nav>
+
+      <article class="prose" style="margin-top:1.5rem">
+        <header style="margin-bottom:2rem">
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem">
+            {post.data.tags.map((tag) => (
+              <span class="badge badge-new">{tag}</span>
+            ))}
+          </div>
+          <h1 style="font-size:clamp(var(--text-2xl),4vw,var(--text-4xl));letter-spacing:-0.02em;font-weight:800">
+            {post.data.title}
+          </h1>
+          <div style="display:flex;align-items:center;gap:0.75rem;margin-top:1rem;font-size:var(--text-sm);color:var(--color-text-muted)">
+            <span>{post.data.author}</span>
+            <span>·</span>
+            <time datetime={post.data.pubDate.toISOString()}>
+              {post.data.pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+            </time>
+          </div>
+        </header>
+        <Content />
+      </article>
+    </div>
+  </main>
+</BaseLayout>

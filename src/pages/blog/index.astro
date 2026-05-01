@@ -1,0 +1,60 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Blog',
+  name: 'Toolset Blog',
+  description: 'Guides, tutorials, and tips on calculations, finance, health, and more.',
+  url: 'https://toolset.dev/blog/',
+};
+---
+
+<BaseLayout
+  title="Blog — Calculation Guides & Tips"
+  description="Guides, tutorials, and tips on percentages, compound interest, BMI, unit conversions, and more. Learn the maths behind every tool."
+  jsonLd={jsonLd}
+>
+  <main id="main-content">
+    <section class="category-hero" aria-labelledby="blog-heading">
+      <div class="container">
+        <h1 id="blog-heading">Blog</h1>
+        <p>Guides, tutorials, and tips on calculations, finance, health, and everyday maths.</p>
+      </div>
+    </section>
+
+    <section class="page-section">
+      <div class="container">
+        {posts.length === 0 ? (
+          <p style="color:var(--color-text-muted);text-align:center;padding:4rem 0">
+            Articles coming soon. Check back shortly.
+          </p>
+        ) : (
+          <div class="blog-grid">
+            {posts.map((post) => (
+              <a href={`/blog/${post.slug}/`} class="blog-card">
+                <div class="blog-card-body">
+                  <span class="blog-category-tag">{post.data.tags[0] ?? 'Guide'}</span>
+                  <h3>{post.data.title}</h3>
+                  <p>{post.data.description}</p>
+                  <div class="blog-card-meta">
+                    <span>{post.data.author}</span>
+                    <span>·</span>
+                    <time datetime={post.data.pubDate.toISOString()}>
+                      {post.data.pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                    </time>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  </main>
+</BaseLayout>

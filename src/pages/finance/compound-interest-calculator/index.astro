@@ -1,0 +1,190 @@
+---
+import ToolLayout from '../../../layouts/ToolLayout.astro';
+import { tools } from '../../../data/tools';
+
+const tool = tools.find((t) => t.slug === 'compound-interest-calculator')!;
+
+const faqs = [
+  {
+    q: 'What is compound interest?',
+    a: 'Compound interest is interest calculated on both the initial principal and the accumulated interest from previous periods. This means your investment grows faster over time compared to simple interest.',
+  },
+  {
+    q: 'What is the compound interest formula?',
+    a: 'A = P(1 + r/n)^(nt), where A is the final amount, P is the principal, r is the annual interest rate (as a decimal), n is the number of times interest is compounded per year, and t is the time in years.',
+  },
+  {
+    q: 'How often should interest compound for the best returns?',
+    a: 'The more frequently interest compounds, the more you earn. Daily compounding yields slightly more than monthly, which yields more than annual. In practice, the difference between daily and monthly is small for most savings rates.',
+  },
+  {
+    q: 'What is the Rule of 72?',
+    a: 'The Rule of 72 is a quick way to estimate how long it takes to double your money. Divide 72 by your annual interest rate. At 6% per year, your investment doubles in roughly 72 ÷ 6 = 12 years.',
+  },
+];
+---
+
+<ToolLayout tool={tool} faqs={faqs}>
+  <div class="calculator" role="region" aria-label="Compound interest calculator">
+    <div class="calc-panel active" id="panel-ci" style="display:block">
+      <div class="field-group">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+          <div class="field">
+            <label for="ci-principal">Principal Amount ($)</label>
+            <input class="input" type="number" id="ci-principal" placeholder="e.g. 10000" min="0" step="any" />
+          </div>
+          <div class="field">
+            <label for="ci-rate">Annual Interest Rate (%)</label>
+            <input class="input" type="number" id="ci-rate" placeholder="e.g. 7" min="0" step="any" />
+          </div>
+          <div class="field">
+            <label for="ci-freq">Compounding Frequency</label>
+            <select class="select" id="ci-freq">
+              <option value="365">Daily</option>
+              <option value="12" selected>Monthly</option>
+              <option value="4">Quarterly</option>
+              <option value="2">Semi-annually</option>
+              <option value="1">Annually</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="ci-years">Time Period (years)</label>
+            <input class="input" type="number" id="ci-years" placeholder="e.g. 10" min="1" max="100" step="1" />
+          </div>
+        </div>
+      </div>
+
+      <div class="calc-actions">
+        <button class="btn btn-primary" id="calc-ci">Calculate</button>
+        <button class="btn btn-secondary" id="reset-ci">Reset</button>
+      </div>
+
+      <!-- Summary result cards -->
+      <div id="ci-results" class="hidden" style="margin-top:1.75rem" aria-live="polite" aria-atomic="true">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(10rem,1fr));gap:1rem;margin-bottom:1.5rem">
+          <div class="result-box visible" style="margin:0">
+            <p class="result-label">Final Amount</p>
+            <p class="result-value" id="ci-final" style="font-size:var(--text-2xl)"></p>
+          </div>
+          <div class="result-box visible" style="margin:0;border-color:var(--color-success);background:color-mix(in srgb,var(--color-success) 10%,var(--color-bg))">
+            <p class="result-label" style="color:var(--color-success)">Total Interest</p>
+            <p class="result-value" id="ci-interest" style="font-size:var(--text-2xl)"></p>
+          </div>
+          <div class="result-box visible" style="margin:0;border-color:var(--color-border);background:var(--color-bg-secondary)">
+            <p class="result-label" style="color:var(--color-text-muted)">Total Return</p>
+            <p class="result-value" id="ci-return" style="font-size:var(--text-2xl)"></p>
+          </div>
+        </div>
+
+        <!-- Year-by-year table -->
+        <h3 style="font-size:var(--text-lg);margin-bottom:0.75rem">Year-by-Year Breakdown</h3>
+        <div class="table-wrap">
+          <table class="data-table" id="ci-table" aria-label="Compound interest year by year breakdown">
+            <thead>
+              <tr>
+                <th>Year</th>
+                <th>Balance</th>
+                <th>Interest Earned</th>
+                <th>Total Interest</th>
+              </tr>
+            </thead>
+            <tbody id="ci-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Explainer -->
+  <section class="mt-8 prose" aria-labelledby="how-ci-works">
+    <h2 id="how-ci-works">How Compound Interest Works</h2>
+    <p>
+      With compound interest, you earn interest on your interest. Each compounding period, the interest
+      earned is added to the principal, and the next period's interest is calculated on this larger amount.
+      Over time, this creates exponential growth — often called the "eighth wonder of the world."
+    </p>
+    <h3>The Formula</h3>
+    <p>
+      <code>A = P(1 + r/n)<sup>nt</sup></code><br />
+      Where P = principal, r = annual rate (decimal), n = compounding frequency per year, t = years.
+    </p>
+    <h3>Monthly vs Annual Compounding</h3>
+    <p>
+      Monthly compounding gives you slightly more than annual because interest is applied more frequently.
+      On $10,000 at 7% for 10 years: annual compounding yields ~$19,672 while monthly compounding
+      yields ~$20,097 — a difference of $425.
+    </p>
+  </section>
+</ToolLayout>
+
+<script>
+  function currency(n: number): string {
+    return n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
+  }
+
+  function pct(n: number): string {
+    return n.toFixed(2) + '%';
+  }
+
+  function calcCI() {
+    const P = parseFloat((document.getElementById('ci-principal') as HTMLInputElement).value);
+    const r = parseFloat((document.getElementById('ci-rate') as HTMLInputElement).value) / 100;
+    const n = parseInt((document.getElementById('ci-freq') as HTMLSelectElement).value, 10);
+    const t = parseInt((document.getElementById('ci-years') as HTMLInputElement).value, 10);
+
+    if ([P, r, t].some(isNaN) || P <= 0 || r < 0 || t < 1) return;
+
+    const A = P * Math.pow(1 + r / n, n * t);
+    const totalInterest = A - P;
+    const totalReturn = (totalInterest / P) * 100;
+
+    document.getElementById('ci-final')!.textContent = currency(A);
+    document.getElementById('ci-interest')!.textContent = currency(totalInterest);
+    document.getElementById('ci-return')!.textContent = pct(totalReturn);
+    document.getElementById('ci-results')!.classList.remove('hidden');
+
+    // Build year-by-year table (capped at 50 rows)
+    const tbody = document.getElementById('ci-tbody')!;
+    tbody.innerHTML = '';
+    const years = Math.min(t, 50);
+    let cumInterest = 0;
+
+    for (let y = 1; y <= years; y++) {
+      const balance = P * Math.pow(1 + r / n, n * y);
+      const prevBalance = y === 1 ? P : P * Math.pow(1 + r / n, n * (y - 1));
+      const yearInterest = balance - prevBalance;
+      cumInterest += yearInterest;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${y}</td>
+        <td>${currency(balance)}</td>
+        <td style="color:var(--color-success)">${currency(yearInterest)}</td>
+        <td>${currency(cumInterest)}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    if (t > 50) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td colspan="4" style="text-align:center;color:var(--color-text-muted);font-style:italic">Showing first 50 of ${t} years</td>`;
+      tbody.appendChild(tr);
+    }
+  }
+
+  document.getElementById('calc-ci')!.addEventListener('click', calcCI);
+
+  document.getElementById('reset-ci')!.addEventListener('click', () => {
+    ['ci-principal', 'ci-rate', 'ci-years'].forEach((id) => {
+      (document.getElementById(id) as HTMLInputElement).value = '';
+    });
+    (document.getElementById('ci-freq') as HTMLSelectElement).value = '12';
+    document.getElementById('ci-results')!.classList.add('hidden');
+    document.getElementById('ci-tbody')!.innerHTML = '';
+  });
+
+  // Live calculation
+  ['ci-principal', 'ci-rate', 'ci-freq', 'ci-years'].forEach((id) =>
+    document.getElementById(id)!.addEventListener('input', calcCI)
+  );
+</script>

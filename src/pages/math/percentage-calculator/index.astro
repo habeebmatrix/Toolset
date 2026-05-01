@@ -1,0 +1,299 @@
+---
+import ToolLayout from '../../../layouts/ToolLayout.astro';
+import { tools } from '../../../data/tools';
+
+const tool = tools.find((t) => t.slug === 'percentage-calculator')!;
+
+const faqs = [
+  {
+    q: 'How do I calculate X% of a number?',
+    a: 'Multiply the number by the percentage and divide by 100. For example, 20% of 150 = (20 ÷ 100) × 150 = 30.',
+  },
+  {
+    q: 'How do I find what percentage one number is of another?',
+    a: 'Divide the first number by the second and multiply by 100. For example, 30 is what % of 150? → (30 ÷ 150) × 100 = 20%.',
+  },
+  {
+    q: 'How do I calculate percentage increase or decrease?',
+    a: 'Subtract the original from the new value, divide by the original, and multiply by 100. A positive result is an increase; negative is a decrease.',
+  },
+  {
+    q: 'How do I add a percentage to a number?',
+    a: 'Multiply the number by (1 + percentage/100). To add 15% to 200: 200 × 1.15 = 230.',
+  },
+  {
+    q: 'How do I subtract a percentage from a number?',
+    a: 'Multiply the number by (1 − percentage/100). To subtract 15% from 200: 200 × 0.85 = 170.',
+  },
+];
+---
+
+<ToolLayout tool={tool} faqs={faqs}>
+  <div class="calculator" role="region" aria-label="Percentage calculator">
+    <!-- Tab bar -->
+    <div class="calc-tabs" role="tablist" aria-label="Calculation modes">
+      <button class="calc-tab active" role="tab" aria-selected="true"  aria-controls="panel-of"       id="tab-of"       data-panel="of">X% of Y</button>
+      <button class="calc-tab"        role="tab" aria-selected="false" aria-controls="panel-what-pct" id="tab-what-pct" data-panel="what-pct">What % is X of Y?</button>
+      <button class="calc-tab"        role="tab" aria-selected="false" aria-controls="panel-change"   id="tab-change"   data-panel="change">% Change</button>
+      <button class="calc-tab"        role="tab" aria-selected="false" aria-controls="panel-add-sub"  id="tab-add-sub"  data-panel="add-sub">Add / Subtract %</button>
+    </div>
+
+    <!-- Panel 1: X% of Y -->
+    <div class="calc-panel active" id="panel-of" role="tabpanel" aria-labelledby="tab-of">
+      <div class="field-group">
+        <div class="field-row" style="grid-template-columns:1fr auto 1fr auto 1fr">
+          <div class="field">
+            <label for="of-pct">Percentage</label>
+            <input class="input" type="number" id="of-pct" placeholder="e.g. 20" min="0" step="any" aria-describedby="of-pct-unit" />
+          </div>
+          <span class="field-sep" id="of-pct-unit">%  of</span>
+          <div class="field">
+            <label for="of-val">Value</label>
+            <input class="input" type="number" id="of-val" placeholder="e.g. 150" step="any" />
+          </div>
+          <span class="field-sep">=</span>
+          <div class="field">
+            <label>Result</label>
+            <input class="input" id="of-result" readonly placeholder="—" style="background:var(--color-bg-secondary);cursor:default" aria-live="polite" />
+          </div>
+        </div>
+      </div>
+      <div class="calc-actions">
+        <button class="btn btn-primary" id="calc-of">Calculate</button>
+        <button class="btn btn-secondary" id="reset-of">Reset</button>
+      </div>
+      <div class="result-box" id="result-of" aria-live="polite" aria-atomic="true">
+        <p class="result-label">Result</p>
+        <p class="result-value" id="result-of-value"></p>
+        <p class="result-formula" id="result-of-formula"></p>
+      </div>
+    </div>
+
+    <!-- Panel 2: What % is X of Y -->
+    <div class="calc-panel" id="panel-what-pct" role="tabpanel" aria-labelledby="tab-what-pct">
+      <div class="field-group">
+        <div class="field-row">
+          <div class="field">
+            <label for="wp-x">Value (X)</label>
+            <input class="input" type="number" id="wp-x" placeholder="e.g. 30" step="any" />
+          </div>
+          <span class="field-sep">is what % of</span>
+          <div class="field">
+            <label for="wp-y">Total (Y)</label>
+            <input class="input" type="number" id="wp-y" placeholder="e.g. 150" step="any" />
+          </div>
+        </div>
+      </div>
+      <div class="calc-actions">
+        <button class="btn btn-primary" id="calc-wp">Calculate</button>
+        <button class="btn btn-secondary" id="reset-wp">Reset</button>
+      </div>
+      <div class="result-box" id="result-wp" aria-live="polite" aria-atomic="true">
+        <p class="result-label">Result</p>
+        <p class="result-value" id="result-wp-value"></p>
+        <p class="result-formula" id="result-wp-formula"></p>
+      </div>
+    </div>
+
+    <!-- Panel 3: % Change -->
+    <div class="calc-panel" id="panel-change" role="tabpanel" aria-labelledby="tab-change">
+      <div class="field-group">
+        <div class="field-row">
+          <div class="field">
+            <label for="ch-from">Original value</label>
+            <input class="input" type="number" id="ch-from" placeholder="e.g. 80" step="any" />
+          </div>
+          <span class="field-sep">→</span>
+          <div class="field">
+            <label for="ch-to">New value</label>
+            <input class="input" type="number" id="ch-to" placeholder="e.g. 100" step="any" />
+          </div>
+        </div>
+      </div>
+      <div class="calc-actions">
+        <button class="btn btn-primary" id="calc-ch">Calculate</button>
+        <button class="btn btn-secondary" id="reset-ch">Reset</button>
+      </div>
+      <div class="result-box" id="result-ch" aria-live="polite" aria-atomic="true">
+        <p class="result-label">Percentage Change</p>
+        <p class="result-value" id="result-ch-value"></p>
+        <p class="result-formula" id="result-ch-formula"></p>
+      </div>
+    </div>
+
+    <!-- Panel 4: Add / Subtract % -->
+    <div class="calc-panel" id="panel-add-sub" role="tabpanel" aria-labelledby="tab-add-sub">
+      <div class="field-group">
+        <div class="field">
+          <label for="as-val">Value</label>
+          <input class="input" type="number" id="as-val" placeholder="e.g. 200" step="any" />
+        </div>
+        <div class="field">
+          <label for="as-pct">Percentage (%)</label>
+          <input class="input" type="number" id="as-pct" placeholder="e.g. 15" min="0" step="any" />
+        </div>
+      </div>
+      <div class="calc-actions">
+        <button class="btn btn-primary" id="calc-add">Add %</button>
+        <button class="btn btn-primary" id="calc-sub" style="background:var(--color-text-secondary)">Subtract %</button>
+        <button class="btn btn-secondary" id="reset-as">Reset</button>
+      </div>
+      <div class="result-box" id="result-as" aria-live="polite" aria-atomic="true">
+        <p class="result-label" id="result-as-label">Result</p>
+        <p class="result-value" id="result-as-value"></p>
+        <p class="result-formula" id="result-as-formula"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Explainer -->
+  <section class="mt-8 prose" aria-labelledby="how-it-works">
+    <h2 id="how-it-works">How to Calculate Percentages</h2>
+    <p>
+      A percentage is a way of expressing a number as a fraction of 100. The word "percent" comes
+      from the Latin <em>per centum</em>, meaning "by the hundred."
+    </p>
+
+    <h3>X% of Y</h3>
+    <p>To find X percent of Y, use the formula: <code>Result = (X ÷ 100) × Y</code><br />
+    Example: 25% of 80 = (25 ÷ 100) × 80 = <strong>20</strong>.</p>
+
+    <h3>What Percentage is X of Y?</h3>
+    <p>To find what percentage X is of Y: <code>Result = (X ÷ Y) × 100</code><br />
+    Example: 20 is what % of 80? → (20 ÷ 80) × 100 = <strong>25%</strong>.</p>
+
+    <h3>Percentage Increase / Decrease</h3>
+    <p>Formula: <code>% Change = ((New − Original) ÷ Original) × 100</code><br />
+    A positive result means an increase; a negative result means a decrease.<br />
+    Example: From 80 to 100 → ((100 − 80) ÷ 80) × 100 = <strong>+25%</strong>.</p>
+
+    <h3>Adding or Subtracting a Percentage</h3>
+    <p>
+      Add X% to Y: <code>Y × (1 + X/100)</code><br />
+      Subtract X% from Y: <code>Y × (1 − X/100)</code><br />
+      Example: Add 20% to 150 → 150 × 1.20 = <strong>180</strong>.
+    </p>
+  </section>
+</ToolLayout>
+
+<script>
+  // ── Helpers ──────────────────────────────────────────────
+  function fmt(n: number, decimals = 4): string {
+    const rounded = parseFloat(n.toFixed(decimals));
+    return rounded.toLocaleString('en-US', { maximumFractionDigits: decimals });
+  }
+
+  function show(boxId: string, value: string, formula: string) {
+    const box = document.getElementById(boxId)!;
+    box.querySelector<HTMLElement>(`#${boxId}-value`)!.textContent = value;
+    box.querySelector<HTMLElement>(`#${boxId}-formula`)!.textContent = formula;
+    box.classList.add('visible');
+  }
+
+  function hide(boxId: string) {
+    document.getElementById(boxId)!.classList.remove('visible');
+  }
+
+  function reset(fields: string[], boxId: string) {
+    fields.forEach((id) => {
+      const el = document.getElementById(id) as HTMLInputElement;
+      if (el) el.value = '';
+    });
+    hide(boxId);
+  }
+
+  function val(id: string): number {
+    return parseFloat((document.getElementById(id) as HTMLInputElement).value);
+  }
+
+  // ── Tabs ─────────────────────────────────────────────────
+  document.querySelectorAll<HTMLButtonElement>('.calc-tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.calc-tab').forEach((t) => {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+      });
+      document.querySelectorAll('.calc-panel').forEach((p) => p.classList.remove('active'));
+
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
+      document.getElementById(`panel-${tab.dataset.panel!}`)!.classList.add('active');
+    });
+  });
+
+  // ── Panel 1: X% of Y ─────────────────────────────────────
+  function calcOf() {
+    const pct = val('of-pct'), v = val('of-val');
+    if (isNaN(pct) || isNaN(v)) return;
+    const result = (pct / 100) * v;
+    const resultEl = document.getElementById('of-result') as HTMLInputElement;
+    resultEl.value = fmt(result);
+    show('result-of', `${fmt(result)}`, `(${fmt(pct)} ÷ 100) × ${fmt(v)} = ${fmt(result)}`);
+  }
+
+  document.getElementById('calc-of')!.addEventListener('click', calcOf);
+  document.getElementById('reset-of')!.addEventListener('click', () => {
+    reset(['of-pct', 'of-val'], 'result-of');
+    (document.getElementById('of-result') as HTMLInputElement).value = '';
+  });
+
+  // Live update
+  ['of-pct', 'of-val'].forEach((id) =>
+    document.getElementById(id)!.addEventListener('input', calcOf)
+  );
+
+  // ── Panel 2: What % is X of Y ─────────────────────────────
+  function calcWp() {
+    const x = val('wp-x'), y = val('wp-y');
+    if (isNaN(x) || isNaN(y) || y === 0) return;
+    const result = (x / y) * 100;
+    show('result-wp', `${fmt(result)}%`, `(${fmt(x)} ÷ ${fmt(y)}) × 100 = ${fmt(result)}%`);
+  }
+
+  document.getElementById('calc-wp')!.addEventListener('click', calcWp);
+  document.getElementById('reset-wp')!.addEventListener('click', () => reset(['wp-x', 'wp-y'], 'result-wp'));
+  ['wp-x', 'wp-y'].forEach((id) => document.getElementById(id)!.addEventListener('input', calcWp));
+
+  // ── Panel 3: % Change ─────────────────────────────────────
+  function calcCh() {
+    const from = val('ch-from'), to = val('ch-to');
+    if (isNaN(from) || isNaN(to) || from === 0) return;
+    const change = ((to - from) / Math.abs(from)) * 100;
+    const sign = change >= 0 ? '+' : '';
+    const direction = change >= 0 ? 'increase' : 'decrease';
+    show(
+      'result-ch',
+      `${sign}${fmt(change)}%`,
+      `((${fmt(to)} − ${fmt(from)}) ÷ ${fmt(Math.abs(from))}) × 100 = ${sign}${fmt(change)}% ${direction}`
+    );
+    const box = document.getElementById('result-ch')!;
+    box.style.borderColor = change >= 0 ? 'var(--color-success)' : 'var(--color-error)';
+    box.style.background = change >= 0 ? 'color-mix(in srgb, var(--color-success) 10%, var(--color-bg))' : 'color-mix(in srgb, var(--color-error) 10%, var(--color-bg))';
+    box.querySelector<HTMLElement>('.result-label')!.style.color = change >= 0 ? 'var(--color-success)' : 'var(--color-error)';
+  }
+
+  document.getElementById('calc-ch')!.addEventListener('click', calcCh);
+  document.getElementById('reset-ch')!.addEventListener('click', () => {
+    reset(['ch-from', 'ch-to'], 'result-ch');
+    const box = document.getElementById('result-ch')!;
+    box.style.borderColor = '';
+    box.style.background = '';
+    box.querySelector<HTMLElement>('.result-label')!.style.color = '';
+  });
+  ['ch-from', 'ch-to'].forEach((id) => document.getElementById(id)!.addEventListener('input', calcCh));
+
+  // ── Panel 4: Add / Subtract % ─────────────────────────────
+  function calcAs(mode: 'add' | 'sub') {
+    const v = val('as-val'), pct = val('as-pct');
+    if (isNaN(v) || isNaN(pct)) return;
+    const result = mode === 'add' ? v * (1 + pct / 100) : v * (1 - pct / 100);
+    const op = mode === 'add' ? '+' : '−';
+    const factor = mode === 'add' ? `1 + ${fmt(pct)}/100 = ${fmt(1 + pct/100)}` : `1 − ${fmt(pct)}/100 = ${fmt(1 - pct/100)}`;
+    document.getElementById('result-as-label')!.textContent = mode === 'add' ? `After adding ${fmt(pct)}%` : `After subtracting ${fmt(pct)}%`;
+    show('result-as', `${fmt(result)}`, `${fmt(v)} × (${factor}) = ${fmt(result)}`);
+  }
+
+  document.getElementById('calc-add')!.addEventListener('click', () => calcAs('add'));
+  document.getElementById('calc-sub')!.addEventListener('click', () => calcAs('sub'));
+  document.getElementById('reset-as')!.addEventListener('click', () => reset(['as-val', 'as-pct'], 'result-as'));
+</script>

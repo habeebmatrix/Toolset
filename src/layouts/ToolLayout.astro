@@ -1,0 +1,179 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import { getCategory, getToolsByCategory } from '../data/tools';
+import type { Tool, CategorySlug } from '../data/tools';
+
+interface Props {
+  tool: Tool;
+  faqs?: { q: string; a: string }[];
+}
+
+const { tool, faqs = [] } = Astro.props;
+const category = getCategory(tool.category as CategorySlug)!;
+const relatedTools = getToolsByCategory(tool.category as CategorySlug)
+  .filter((t) => t.slug !== tool.slug && t.isReady)
+  .slice(0, 5);
+
+const jsonLd: Record<string, unknown>[] = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: tool.name,
+    description: tool.description,
+    applicationCategory: 'UtilitiesApplication',
+    operatingSystem: 'Web',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    url: `https://toolset.dev/${tool.category}/${tool.slug}/`,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://toolset.dev/' },
+      { '@type': 'ListItem', position: 2, name: category.name, item: `https://toolset.dev/${category.slug}/` },
+      { '@type': 'ListItem', position: 3, name: tool.name, item: `https://toolset.dev/${tool.category}/${tool.slug}/` },
+    ],
+  },
+];
+
+if (faqs.length > 0) {
+  jsonLd.push({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map(({ q, a }) => ({
+      '@type': 'Question',
+      name: q,
+      acceptedAnswer: { '@type': 'Answer', text: a },
+    })),
+  });
+}
+---
+
+<BaseLayout
+  title={`${tool.name} — Free Online ${tool.name}`}
+  description={tool.description}
+  jsonLd={jsonLd}
+>
+  <main id="main-content">
+    <div class="container">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <svg class="breadcrumb-sep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+        <a href={`/${category.slug}/`}>{category.name}</a>
+        <svg class="breadcrumb-sep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+        <span aria-current="page">{tool.name}</span>
+      </nav>
+
+      <div class="tool-page">
+        <article class="tool-main">
+          <header class="tool-header">
+            <h1>{tool.name}</h1>
+            <p>{tool.description}</p>
+          </header>
+
+          <slot />
+
+          {faqs.length > 0 && (
+            <section aria-labelledby="faq-heading" class="mt-8">
+              <h2 id="faq-heading" style="font-size:var(--text-2xl);margin-bottom:0.5rem">
+                Frequently Asked Questions
+              </h2>
+              <div class="faq-list" role="list">
+                {faqs.map(({ q, a }, i) => (
+                  <div class="faq-item" role="listitem">
+                    <button
+                      class="faq-question"
+                      aria-expanded="false"
+                      aria-controls={`faq-answer-${i}`}
+                      id={`faq-q-${i}`}
+                    >
+                      {q}
+                      <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                      </svg>
+                    </button>
+                    <div
+                      class="faq-answer"
+                      id={`faq-answer-${i}`}
+                      role="region"
+                      aria-labelledby={`faq-q-${i}`}
+                    >
+                      <p>{a}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+        </article>
+
+        <aside class="tool-sidebar" aria-label="Related tools and info">
+          {relatedTools.length > 0 && (
+            <div class="sidebar-widget">
+              <h3>More {category.name} Tools</h3>
+              <nav class="sidebar-links">
+                {relatedTools.map((t) => (
+                  <a href={`/${t.category}/${t.slug}/`}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                    {t.name}
+                  </a>
+                ))}
+              </nav>
+            </div>
+          )}
+
+          <div class="sidebar-widget">
+            <h3>All Categories</h3>
+            <nav class="sidebar-links">
+              <a href="/math/">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+                Math
+              </a>
+              <a href="/finance/">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+                Finance
+              </a>
+              <a href="/health/">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+                Health & Fitness
+              </a>
+              <a href="/date-time/">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+                Date & Time
+              </a>
+              <a href="/text/">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+                Text & Writing
+              </a>
+              <a href="/converters/">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+                Unit Converters
+              </a>
+              <a href="/developer/">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+                Developer Tools
+              </a>
+            </nav>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    document.querySelectorAll<HTMLButtonElement>('.faq-question').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const item = btn.closest('.faq-item')!;
+        const isOpen = item.classList.toggle('open');
+        btn.setAttribute('aria-expanded', String(isOpen));
+      });
+    });
+  </script>
+</BaseLayout>

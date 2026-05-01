@@ -1,0 +1,173 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ToolCard from '../components/ToolCard.astro';
+import { categories, getFeaturedTools, getToolsByCategory } from '../data/tools';
+
+const featuredTools = getFeaturedTools();
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Toolset',
+  description: 'Free online calculators and tools for everyday tasks.',
+  url: 'https://toolset.dev/',
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: { '@type': 'EntryPoint', urlTemplate: 'https://toolset.dev/?q={search_term_string}' },
+    'query-input': 'required name=search_term_string',
+  },
+};
+---
+
+<BaseLayout
+  title="Toolset — Free Online Calculators & Tools"
+  description="Free online calculators and tools for math, finance, health, dates, text, and more. No signup required. Fast, accurate, and mobile-friendly."
+  jsonLd={jsonLd}
+>
+  <main id="main-content">
+    <!-- Hero -->
+    <section class="hero" aria-labelledby="hero-heading">
+      <div class="container">
+        <div class="hero-badge" aria-label="Free to use">
+          <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="5" fill="currentColor"/></svg>
+          Free &amp; No Signup
+        </div>
+        <h1 id="hero-heading">
+          Every tool you need,<br />
+          <span>in one place.</span>
+        </h1>
+        <p class="hero-description">
+          Free online calculators for math, finance, health, and more.
+          Fast, accurate, works on any device.
+        </p>
+
+        <div class="search-wrap" role="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            class="search-input"
+            id="tool-search"
+            type="search"
+            placeholder="Search tools — percentage, BMI, JSON…"
+            aria-label="Search tools"
+            autocomplete="off"
+          />
+        </div>
+      </div>
+    </section>
+
+    <!-- Categories -->
+    <section class="page-section" aria-labelledby="categories-heading">
+      <div class="container">
+        <div class="section-header">
+          <h2 id="categories-heading">Browse by Category</h2>
+        </div>
+        <div class="categories-grid">
+          {categories.map((cat) => {
+            const count = getToolsByCategory(cat.slug).length;
+            return (
+              <a href={`/${cat.slug}/`} class="category-card" aria-label={`${cat.name} — ${cat.description}`}>
+                <div class="category-icon" aria-hidden="true" set:html={cat.icon} />
+                <div>
+                  <h3>{cat.name}</h3>
+                  <p>{cat.description}</p>
+                </div>
+                <span class="category-count">{count} tool{count !== 1 ? 's' : ''}</span>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+
+    <!-- Featured tools -->
+    <section class="page-section" aria-labelledby="featured-heading">
+      <div class="container">
+        <div class="section-header">
+          <h2 id="featured-heading">Featured Tools</h2>
+        </div>
+        <div class="tools-grid" id="tools-grid">
+          {featuredTools.map((tool) => <ToolCard tool={tool} />)}
+        </div>
+      </div>
+    </section>
+
+    <!-- All tools (for search) -->
+    <section class="page-section" aria-labelledby="all-tools-heading">
+      <div class="container">
+        <div class="section-header">
+          <h2 id="all-tools-heading">All Tools</h2>
+        </div>
+        <div class="tools-grid" id="all-tools-grid">
+          {categories.flatMap((cat) =>
+            getToolsByCategory(cat.slug).map((tool) => (
+              <div data-name={tool.name.toLowerCase()} data-tags={tool.tags.join(' ').toLowerCase()} data-category={tool.category}>
+                <ToolCard tool={tool} />
+              </div>
+            ))
+          )}
+        </div>
+        <p id="search-empty" class="hidden" style="color:var(--color-text-muted);text-align:center;padding:2rem 0">
+          No tools found for "<span id="search-term"></span>". Try a different keyword.
+        </p>
+      </div>
+    </section>
+
+    <!-- SEO copy -->
+    <section class="page-section" aria-labelledby="about-heading" style="background:var(--color-bg-secondary);padding-block:3rem">
+      <div class="container">
+        <div class="prose" style="max-width:48rem;margin-inline:auto">
+          <h2 id="about-heading">Free Tools for Everyday Calculations</h2>
+          <p>
+            Toolset is a growing library of free, browser-based calculators and utilities. Whether you need to
+            work out a <a href="/math/percentage-calculator/">percentage</a>, calculate
+            <a href="/finance/compound-interest-calculator/">compound interest</a>, or convert units,
+            you'll find a fast, accurate tool here — no account, no ads, no tracking.
+          </p>
+          <p>
+            Every tool is built with precision and clarity in mind. Formulas are shown alongside results so
+            you always understand what's being calculated. Tools work on mobile, tablet, and desktop equally well.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<script>
+  const searchInput = document.getElementById('tool-search') as HTMLInputElement;
+  const allGrid = document.getElementById('all-tools-grid')!;
+  const featuredSection = document.getElementById('tools-grid')!.closest('section')!;
+  const emptyMsg = document.getElementById('search-empty')!;
+  const termSpan = document.getElementById('search-term')!;
+
+  const cards = Array.from(allGrid.querySelectorAll<HTMLDivElement>('[data-name]'));
+
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value.trim().toLowerCase();
+
+    if (!q) {
+      cards.forEach((c) => c.classList.remove('hidden'));
+      featuredSection.classList.remove('hidden');
+      emptyMsg.classList.add('hidden');
+      return;
+    }
+
+    featuredSection.classList.add('hidden');
+    let anyVisible = false;
+
+    cards.forEach((c) => {
+      const match =
+        c.dataset.name!.includes(q) ||
+        c.dataset.tags!.includes(q) ||
+        c.dataset.category!.includes(q);
+      c.classList.toggle('hidden', !match);
+      if (match) anyVisible = true;
+    });
+
+    termSpan.textContent = searchInput.value.trim();
+    emptyMsg.classList.toggle('hidden', anyVisible);
+  });
+</script>

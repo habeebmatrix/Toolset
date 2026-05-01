@@ -1,0 +1,83 @@
+---
+import { categories } from '../data/tools';
+
+const navCategories = categories.slice(0, 5);
+---
+
+<header class="site-header" role="banner">
+  <div class="container">
+    <a href="/" class="logo" aria-label="Toolset home">
+      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect width="32" height="32" rx="8" fill="#4F46E5"/>
+        <rect x="7" y="9.5" width="18" height="3" rx="1.5" fill="white"/>
+        <rect x="7" y="14.5" width="12" height="3" rx="1.5" fill="white"/>
+        <rect x="7" y="19.5" width="15" height="3" rx="1.5" fill="white"/>
+      </svg>
+      Toolset
+    </a>
+
+    <nav class="site-nav" aria-label="Main navigation">
+      {navCategories.map((cat) => (
+        <a href={`/${cat.slug}/`}>{cat.name}</a>
+      ))}
+      <a href="/blog/">Blog</a>
+    </nav>
+
+    <div class="header-actions">
+      <button
+        class="btn-ghost mobile-menu-btn"
+        id="mobile-menu-btn"
+        aria-expanded="false"
+        aria-controls="mobile-nav"
+        aria-label="Open menu"
+      >
+        <svg id="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20" aria-hidden="true">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+        <svg id="close-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20" aria-hidden="true" style="display:none">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation" aria-hidden="true">
+  <p class="mobile-nav-section-title">Tools</p>
+  {categories.map((cat) => (
+    <a href={`/${cat.slug}/`}>{cat.name}</a>
+  ))}
+  <p class="mobile-nav-section-title">More</p>
+  <a href="/blog/">Blog</a>
+</nav>
+
+<script>
+  const btn = document.getElementById('mobile-menu-btn')!;
+  const nav = document.getElementById('mobile-nav')!;
+  const menuIcon = document.getElementById('menu-icon')!;
+  const closeIcon = document.getElementById('close-icon')!;
+
+  btn.addEventListener('click', () => {
+    const isOpen = nav.classList.toggle('open');
+    btn.setAttribute('aria-expanded', String(isOpen));
+    nav.setAttribute('aria-hidden', String(!isOpen));
+    menuIcon.style.display = isOpen ? 'none' : '';
+    closeIcon.style.display = isOpen ? '' : 'none';
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+  });
+
+  // Close on route change / link click
+  nav.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', () => {
+      nav.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+      nav.setAttribute('aria-hidden', 'true');
+      menuIcon.style.display = '';
+      closeIcon.style.display = 'none';
+      document.body.style.overflow = '';
+    });
+  });
+</script>
