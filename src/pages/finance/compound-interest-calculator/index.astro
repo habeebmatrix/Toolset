@@ -28,7 +28,7 @@ const faqs = [
   <div class="calculator" role="region" aria-label="Compound interest calculator">
     <div class="calc-panel active" id="panel-ci" style="display:block">
       <div class="field-group">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr));gap:1.25rem">
           <div class="field">
             <label for="ci-principal">Principal Amount ($)</label>
             <input class="input" type="number" id="ci-principal" placeholder="e.g. 10000" min="0" step="any" />

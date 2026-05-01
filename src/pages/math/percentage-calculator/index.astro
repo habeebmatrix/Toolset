@@ -41,20 +41,15 @@ const faqs = [
     <!-- Panel 1: X% of Y -->
     <div class="calc-panel active" id="panel-of" role="tabpanel" aria-labelledby="tab-of">
       <div class="field-group">
-        <div class="field-row" style="grid-template-columns:1fr auto 1fr auto 1fr">
+        <div class="field-row">
           <div class="field">
             <label for="of-pct">Percentage</label>
-            <input class="input" type="number" id="of-pct" placeholder="e.g. 20" min="0" step="any" aria-describedby="of-pct-unit" />
+            <input class="input" type="number" id="of-pct" placeholder="e.g. 20" min="0" step="any" />
           </div>
-          <span class="field-sep" id="of-pct-unit">%  of</span>
+          <span class="field-sep">% of</span>
           <div class="field">
             <label for="of-val">Value</label>
             <input class="input" type="number" id="of-val" placeholder="e.g. 150" step="any" />
-          </div>
-          <span class="field-sep">=</span>
-          <div class="field">
-            <label>Result</label>
-            <input class="input" id="of-result" readonly placeholder="—" style="background:var(--color-bg-secondary);cursor:default" aria-live="polite" />
           </div>
         </div>
       </div>
@@ -226,15 +221,12 @@ const faqs = [
     const pct = val('of-pct'), v = val('of-val');
     if (isNaN(pct) || isNaN(v)) return;
     const result = (pct / 100) * v;
-    const resultEl = document.getElementById('of-result') as HTMLInputElement;
-    resultEl.value = fmt(result);
     show('result-of', `${fmt(result)}`, `(${fmt(pct)} ÷ 100) × ${fmt(v)} = ${fmt(result)}`);
   }
 
   document.getElementById('calc-of')!.addEventListener('click', calcOf);
   document.getElementById('reset-of')!.addEventListener('click', () => {
     reset(['of-pct', 'of-val'], 'result-of');
-    (document.getElementById('of-result') as HTMLInputElement).value = '';
   });
 
   // Live update

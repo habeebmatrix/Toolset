@@ -834,6 +834,7 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   flex-direction: column;
   gap: 0.375rem;
+  min-width: 0;
 }
 
 .field label {
@@ -844,16 +845,28 @@ h1, h2, h3, h4, h5, h6 {
 
 .field-row {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 0.75rem;
+  grid-template-columns: 1fr;
+  align-items: stretch;
+  gap: 0.875rem;
 }
+
+.field-row > .field { min-width: 0; }
 
 .field-sep {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
   font-weight: 500;
   white-space: nowrap;
+  text-align: center;
+}
+
+@media (min-width: 640px) {
+  .field-row {
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .field-sep { padding-top: 1.5rem; }
 }
 
 .input {
