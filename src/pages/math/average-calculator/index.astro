@@ -1,0 +1,260 @@
+---
+import ToolLayout from '../../../layouts/ToolLayout.astro';
+import { tools } from '../../../data/tools';
+
+const tool = tools.find((t) => t.slug === 'average-calculator')!;
+
+const faqs = [
+  {
+    q: 'What is the difference between mean, median, and mode?',
+    a: 'The mean is the sum of all values divided by the count. The median is the middle value when sorted. The mode is the value that appears most often. All three are measures of central tendency.',
+  },
+  {
+    q: 'When should I use the median instead of the mean?',
+    a: 'Use the median when your data contains outliers or is skewed. For example, median household income is more representative than mean income because a few very high earners can pull the mean far above what most people earn.',
+  },
+  {
+    q: 'What if there is no mode?',
+    a: 'If every value appears exactly once, there is no mode. If multiple values share the highest frequency, the dataset is multimodal and all of those values are modes.',
+  },
+  {
+    q: 'What does range tell you?',
+    a: 'Range is the difference between the highest and lowest values. It measures the spread of the data. A large range means the data is spread out; a small range means it is clustered.',
+  },
+  {
+    q: 'How do I enter numbers in the calculator?',
+    a: 'Type or paste your numbers separated by commas, spaces, or new lines. For example: 4, 8, 15, 16, 23, 42 or just 4 8 15 16 23 42.',
+  },
+];
+---
+
+<ToolLayout tool={tool} faqs={faqs}>
+  <div class="calc-cards" role="region" aria-label="Average calculator">
+
+    <!-- Single input card -->
+    <div class="calc-card">
+      <p class="calc-card-title">Enter your numbers</p>
+      <p style="font-size:var(--text-sm);color:var(--color-text-secondary);margin-bottom:0.875rem">
+        Separate values with commas, spaces, or new lines.
+      </p>
+      <textarea
+        id="avg-input"
+        class="input"
+        rows="4"
+        placeholder="e.g. 4, 8, 15, 16, 23, 42"
+        aria-label="Enter numbers to calculate statistics"
+        style="resize:vertical;font-family:var(--font-mono);font-size:var(--text-sm)"
+      ></textarea>
+      <div class="calc-card-actions" style="margin-top:1rem">
+        <button class="btn btn-primary" id="calc-avg">Calculate</button>
+        <button class="btn btn-secondary" id="reset-avg">Reset</button>
+      </div>
+    </div>
+
+    <!-- Results grid (hidden until calculated) -->
+    <div id="avg-results" class="hidden" aria-live="polite" aria-atomic="true">
+      <div class="stats-grid">
+        <div class="stat-card" id="stat-count">
+          <p class="stat-label">Count</p>
+          <p class="stat-value" id="val-count">—</p>
+        </div>
+        <div class="stat-card" id="stat-sum">
+          <p class="stat-label">Sum</p>
+          <p class="stat-value" id="val-sum">—</p>
+        </div>
+        <div class="stat-card stat-card--primary" id="stat-mean">
+          <p class="stat-label">Mean (Average)</p>
+          <p class="stat-value" id="val-mean">—</p>
+        </div>
+        <div class="stat-card stat-card--primary" id="stat-median">
+          <p class="stat-label">Median</p>
+          <p class="stat-value" id="val-median">—</p>
+        </div>
+        <div class="stat-card" id="stat-mode">
+          <p class="stat-label">Mode</p>
+          <p class="stat-value" id="val-mode">—</p>
+        </div>
+        <div class="stat-card" id="stat-range">
+          <p class="stat-label">Range</p>
+          <p class="stat-value" id="val-range">—</p>
+        </div>
+        <div class="stat-card" id="stat-min">
+          <p class="stat-label">Minimum</p>
+          <p class="stat-value" id="val-min">—</p>
+        </div>
+        <div class="stat-card" id="stat-max">
+          <p class="stat-label">Maximum</p>
+          <p class="stat-value" id="val-max">—</p>
+        </div>
+      </div>
+
+      <!-- Sorted list -->
+      <div class="calc-card" style="margin-top:0">
+        <p class="calc-card-title">Sorted values</p>
+        <p id="val-sorted" style="font-family:var(--font-mono);font-size:var(--text-sm);color:var(--color-text-secondary);word-break:break-all;line-height:1.8"></p>
+      </div>
+    </div>
+
+    <!-- Error state -->
+    <div id="avg-error" class="hidden result-box" style="border-color:var(--color-error);background:color-mix(in srgb,var(--color-error) 10%,var(--color-bg))">
+      <p class="result-label" style="color:var(--color-error)">Error</p>
+      <p class="result-value" style="font-size:var(--text-base);font-weight:500" id="avg-error-msg"></p>
+    </div>
+
+  </div>
+
+  <section class="mt-8 prose" aria-labelledby="averages-explainer">
+    <h2 id="averages-explainer">Mean, Median, Mode, and Range Explained</h2>
+
+    <h3>Mean (Arithmetic Average)</h3>
+    <p>Add all values and divide by the count.<br />
+    Formula: <code>Mean = Sum ÷ Count</code><br />
+    Example: {4, 8, 6, 10, 2} → Sum = 30, Count = 5 → Mean = <strong>6</strong></p>
+
+    <h3>Median</h3>
+    <p>Sort the values. If the count is odd, the median is the middle value. If even, it is the mean of the two middle values.<br />
+    Example (odd): {2, 4, <strong>6</strong>, 8, 10} → Median = <strong>6</strong><br />
+    Example (even): {2, 4, 6, 8} → Median = (4 + 6) / 2 = <strong>5</strong></p>
+
+    <h3>Mode</h3>
+    <p>The value (or values) that appear most frequently. A dataset can have no mode, one mode, or multiple modes.<br />
+    Example: {1, 2, 2, 3, 4} → Mode = <strong>2</strong></p>
+
+    <h3>Range</h3>
+    <p>The difference between the maximum and minimum values.<br />
+    Formula: <code>Range = Max − Min</code><br />
+    Example: {2, 4, 6, 8, 10} → Range = 10 − 2 = <strong>8</strong></p>
+  </section>
+</ToolLayout>
+
+<style>
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.875rem;
+    margin-bottom: 0.875rem;
+  }
+
+  @media (min-width: 480px) {
+    .stats-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  @media (min-width: 768px) {
+    .stats-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  .stat-card {
+    background: var(--color-bg-card);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: 1rem 1.125rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .stat-card--primary {
+    border-color: var(--color-primary-muted);
+    background: var(--color-primary-light);
+  }
+
+  .stat-label {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--color-text-muted);
+  }
+
+  .stat-card--primary .stat-label { color: var(--color-primary); }
+
+  .stat-value {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    color: var(--color-text);
+    word-break: break-all;
+  }
+</style>
+
+<script>
+  function fmt(n: number): string {
+    return parseFloat(n.toFixed(8)).toLocaleString('en-US', { maximumFractionDigits: 8 });
+  }
+
+  function parseInput(raw: string): number[] {
+    return raw
+      .split(/[\s,;\n]+/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0)
+      .map(Number)
+      .filter((n) => !isNaN(n) && isFinite(n));
+  }
+
+  function calcMedian(sorted: number[]): number {
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 === 0
+      ? (sorted[mid - 1] + sorted[mid]) / 2
+      : sorted[mid];
+  }
+
+  function calcMode(nums: number[]): string {
+    const freq = new Map<number, number>();
+    nums.forEach((n) => freq.set(n, (freq.get(n) ?? 0) + 1));
+    const maxFreq = Math.max(...freq.values());
+    if (maxFreq === 1) return 'No mode';
+    const modes = [...freq.entries()]
+      .filter(([, f]) => f === maxFreq)
+      .map(([v]) => fmt(v));
+    return modes.join(', ');
+  }
+
+  function set(id: string, text: string) {
+    document.getElementById(id)!.textContent = text;
+  }
+
+  function calcAvg() {
+    const raw = (document.getElementById('avg-input') as HTMLTextAreaElement).value;
+    const nums = parseInput(raw);
+
+    document.getElementById('avg-error')!.classList.add('hidden');
+    document.getElementById('avg-results')!.classList.add('hidden');
+
+    if (raw.trim() === '') return;
+
+    if (nums.length === 0) {
+      set('avg-error-msg', 'No valid numbers found. Please enter numbers separated by commas or spaces.');
+      document.getElementById('avg-error')!.classList.remove('hidden');
+      return;
+    }
+
+    const sorted = [...nums].sort((a, b) => a - b);
+    const sum = nums.reduce((a, b) => a + b, 0);
+    const mean = sum / nums.length;
+    const median = calcMedian(sorted);
+    const mode = calcMode(nums);
+    const range = sorted[sorted.length - 1] - sorted[0];
+
+    set('val-count', String(nums.length));
+    set('val-sum', fmt(sum));
+    set('val-mean', fmt(mean));
+    set('val-median', fmt(median));
+    set('val-mode', mode);
+    set('val-range', fmt(range));
+    set('val-min', fmt(sorted[0]));
+    set('val-max', fmt(sorted[sorted.length - 1]));
+    set('val-sorted', sorted.map(fmt).join(', '));
+
+    document.getElementById('avg-results')!.classList.remove('hidden');
+  }
+
+  document.getElementById('calc-avg')!.addEventListener('click', calcAvg);
+
+  document.getElementById('reset-avg')!.addEventListener('click', () => {
+    (document.getElementById('avg-input') as HTMLTextAreaElement).value = '';
+    document.getElementById('avg-results')!.classList.add('hidden');
+    document.getElementById('avg-error')!.classList.add('hidden');
+  });
+
+  // Live calculation as user types
+  document.getElementById('avg-input')!.addEventListener('input', calcAvg);
+</script>

@@ -111,11 +111,11 @@ export const tools: Tool[] = [
     slug: 'ratio-calculator',
     name: 'Ratio Calculator',
     shortDescription: 'Simplify ratios and solve proportions.',
-    description: 'Simplify ratios to their lowest terms, solve missing values in proportions, and scale recipes or maps.',
+    description: 'Simplify ratios to their lowest terms, solve missing values in proportions, and scale ratios up or down.',
     category: 'math',
     tags: ['ratio', 'proportion', 'simplify ratio'],
     featured: false,
-    isReady: false,
+    isReady: true,
   },
   {
     slug: 'average-calculator',
@@ -125,7 +125,7 @@ export const tools: Tool[] = [
     category: 'math',
     tags: ['average', 'mean', 'median', 'mode'],
     featured: false,
-    isReady: false,
+    isReady: true,
   },
   // Finance
   {

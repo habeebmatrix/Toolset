@@ -1,0 +1,255 @@
+---
+import ToolLayout from '../../../layouts/ToolLayout.astro';
+import { tools } from '../../../data/tools';
+
+const tool = tools.find((t) => t.slug === 'ratio-calculator')!;
+
+const faqs = [
+  {
+    q: 'What is a ratio?',
+    a: 'A ratio compares two quantities. The ratio 3:2 means "3 for every 2". Ratios can represent fractions, scales, recipes, speeds, and many real-world relationships.',
+  },
+  {
+    q: 'How do you simplify a ratio?',
+    a: 'Divide both numbers by their Greatest Common Divisor (GCD). For example, 12:8 → GCD is 4 → divide both by 4 → 3:2.',
+  },
+  {
+    q: 'What is a proportion?',
+    a: 'A proportion states that two ratios are equal: A:B = C:D. If three values are known, the fourth can be found with cross-multiplication: D = (B × C) / A.',
+  },
+  {
+    q: 'How do you scale a ratio?',
+    a: 'Multiply both parts of the ratio by the same number. Scaling 3:2 by 4 gives 12:8. This is useful for recipes, maps, and scale models.',
+  },
+  {
+    q: 'Are 2:3 and 4:6 equivalent ratios?',
+    a: 'Yes. Both simplify to 2:3. Two ratios are equivalent if they reduce to the same simplified form.',
+  },
+];
+---
+
+<ToolLayout tool={tool} faqs={faqs}>
+  <div class="calc-cards" role="region" aria-label="Ratio calculators">
+
+    <!-- Card 1: Simplify -->
+    <div class="calc-card">
+      <p class="calc-card-title">Simplify a ratio</p>
+      <div class="calc-sentence">
+        <span>Simplify</span>
+        <input class="input-inline" type="number" id="sim-a" placeholder="e.g. 12" step="any" min="0" aria-label="First number" />
+        <span>:</span>
+        <input class="input-inline" type="number" id="sim-b" placeholder="e.g. 8" step="any" min="0" aria-label="Second number" />
+      </div>
+      <div class="calc-card-actions">
+        <button class="btn btn-primary" id="calc-sim">Simplify</button>
+        <button class="btn btn-secondary" id="reset-sim">Reset</button>
+      </div>
+      <div class="result-box" id="result-sim" aria-live="polite" aria-atomic="true">
+        <p class="result-label">Simplified Ratio</p>
+        <p class="result-value" id="result-sim-value"></p>
+        <p class="result-formula" id="result-sim-formula"></p>
+      </div>
+    </div>
+
+    <!-- Card 2: Proportion — find missing value -->
+    <div class="calc-card">
+      <p class="calc-card-title">Solve a proportion — find the missing value</p>
+      <div class="calc-sentence">
+        <input class="input-inline" type="number" id="pr-a" placeholder="e.g. 2" step="any" aria-label="A" />
+        <span>:</span>
+        <input class="input-inline" type="number" id="pr-b" placeholder="e.g. 3" step="any" aria-label="B" />
+        <span>=</span>
+        <input class="input-inline" type="number" id="pr-c" placeholder="e.g. 10" step="any" aria-label="C" />
+        <span>: ?</span>
+      </div>
+      <div class="calc-card-actions">
+        <button class="btn btn-primary" id="calc-pr">Find ?</button>
+        <button class="btn btn-secondary" id="reset-pr">Reset</button>
+      </div>
+      <div class="result-box" id="result-pr" aria-live="polite" aria-atomic="true">
+        <p class="result-label">Missing Value</p>
+        <p class="result-value" id="result-pr-value"></p>
+        <p class="result-formula" id="result-pr-formula"></p>
+      </div>
+    </div>
+
+    <!-- Card 3: Scale a ratio -->
+    <div class="calc-card">
+      <p class="calc-card-title">Scale a ratio</p>
+      <div class="calc-sentence">
+        <span>Scale</span>
+        <input class="input-inline" type="number" id="sc-a" placeholder="e.g. 3" step="any" min="0" aria-label="First part" />
+        <span>:</span>
+        <input class="input-inline" type="number" id="sc-b" placeholder="e.g. 2" step="any" min="0" aria-label="Second part" />
+        <span>by ×</span>
+        <input class="input-inline" type="number" id="sc-factor" placeholder="e.g. 4" step="any" min="0" aria-label="Scale factor" />
+      </div>
+      <div class="calc-card-actions">
+        <button class="btn btn-primary" id="calc-sc">Scale</button>
+        <button class="btn btn-secondary" id="reset-sc">Reset</button>
+      </div>
+      <div class="result-box" id="result-sc" aria-live="polite" aria-atomic="true">
+        <p class="result-label">Scaled Ratio</p>
+        <p class="result-value" id="result-sc-value"></p>
+        <p class="result-formula" id="result-sc-formula"></p>
+      </div>
+    </div>
+
+    <!-- Card 4: Are two ratios equivalent? -->
+    <div class="calc-card">
+      <p class="calc-card-title">Are two ratios equivalent?</p>
+      <div class="calc-sentence">
+        <span>Is</span>
+        <input class="input-inline" type="number" id="eq-a1" placeholder="e.g. 1" step="any" min="0" aria-label="First ratio, first part" />
+        <span>:</span>
+        <input class="input-inline" type="number" id="eq-b1" placeholder="e.g. 2" step="any" min="0" aria-label="First ratio, second part" />
+        <span>the same as</span>
+        <input class="input-inline" type="number" id="eq-a2" placeholder="e.g. 3" step="any" min="0" aria-label="Second ratio, first part" />
+        <span>:</span>
+        <input class="input-inline" type="number" id="eq-b2" placeholder="e.g. 6" step="any" min="0" aria-label="Second ratio, second part" />
+        <span>?</span>
+      </div>
+      <div class="calc-card-actions">
+        <button class="btn btn-primary" id="calc-eq">Check</button>
+        <button class="btn btn-secondary" id="reset-eq">Reset</button>
+      </div>
+      <div class="result-box" id="result-eq" aria-live="polite" aria-atomic="true">
+        <p class="result-label">Result</p>
+        <p class="result-value" id="result-eq-value"></p>
+        <p class="result-formula" id="result-eq-formula"></p>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="mt-8 prose" aria-labelledby="how-ratios-work">
+    <h2 id="how-ratios-work">How to Work with Ratios</h2>
+    <p>A ratio expresses the relationship between two quantities. Ratios appear everywhere — ingredient proportions in recipes, map scales, currency exchange rates, and aspect ratios on screens.</p>
+
+    <h3>Simplifying a Ratio</h3>
+    <p>Find the Greatest Common Divisor (GCD) of both numbers and divide each by it.<br />
+    Example: 18:12 → GCD(18,12) = 6 → <strong>3:2</strong>.</p>
+
+    <h3>Solving Proportions</h3>
+    <p>If A:B = C:D, then A × D = B × C (cross-multiplication).<br />
+    To find D: <code>D = (B × C) / A</code><br />
+    Example: 2:3 = 10:? → D = (3 × 10) / 2 = <strong>15</strong>.</p>
+
+    <h3>Scaling a Ratio</h3>
+    <p>Multiply both parts by the same factor. Scaling 3:2 by 5 gives 15:10, which still simplifies to 3:2.</p>
+  </section>
+</ToolLayout>
+
+<script>
+  function gcd(a: number, b: number): number {
+    a = Math.abs(Math.round(a));
+    b = Math.abs(Math.round(b));
+    while (b) { [a, b] = [b, a % b]; }
+    return a || 1;
+  }
+
+  function fmt(n: number): string {
+    const rounded = parseFloat(n.toFixed(6));
+    return rounded.toLocaleString('en-US', { maximumFractionDigits: 6 });
+  }
+
+  function show(boxId: string, value: string, formula: string, color?: string) {
+    const box = document.getElementById(boxId)!;
+    (box.querySelector(`#${boxId}-value`) as HTMLElement).textContent = value;
+    (box.querySelector(`#${boxId}-formula`) as HTMLElement).textContent = formula;
+    box.style.borderColor = color ?? '';
+    box.style.background = color
+      ? `color-mix(in srgb, ${color} 10%, var(--color-bg))`
+      : '';
+    (box.querySelector('.result-label') as HTMLElement).style.color = color ?? '';
+    box.classList.add('visible');
+  }
+
+  function hideResult(id: string) {
+    const box = document.getElementById(id)!;
+    box.classList.remove('visible');
+    box.style.borderColor = box.style.background = '';
+    (box.querySelector('.result-label') as HTMLElement).style.color = '';
+  }
+
+  function clearFields(fields: string[], boxId: string) {
+    fields.forEach((id) => ((document.getElementById(id) as HTMLInputElement).value = ''));
+    hideResult(boxId);
+  }
+
+  function num(id: string): number {
+    return parseFloat((document.getElementById(id) as HTMLInputElement).value);
+  }
+
+  // ── Simplify ──────────────────────────────────────────────
+  function calcSim() {
+    const a = num('sim-a'), b = num('sim-b');
+    if (isNaN(a) || isNaN(b) || a <= 0 || b <= 0) return;
+    const g = gcd(a, b);
+    const sa = a / g, sb = b / g;
+    const isSame = g === 1;
+    show(
+      'result-sim',
+      `${fmt(sa)} : ${fmt(sb)}`,
+      isSame
+        ? `${fmt(a)} : ${fmt(b)} is already in its simplest form`
+        : `GCD(${fmt(a)}, ${fmt(b)}) = ${fmt(g)} → ${fmt(a)}/${fmt(g)} : ${fmt(b)}/${fmt(g)} = ${fmt(sa)} : ${fmt(sb)}`,
+    );
+  }
+
+  document.getElementById('calc-sim')!.addEventListener('click', calcSim);
+  document.getElementById('reset-sim')!.addEventListener('click', () => clearFields(['sim-a', 'sim-b'], 'result-sim'));
+  ['sim-a', 'sim-b'].forEach((id) => document.getElementById(id)!.addEventListener('input', calcSim));
+
+  // ── Proportion ────────────────────────────────────────────
+  function calcPr() {
+    const a = num('pr-a'), b = num('pr-b'), c = num('pr-c');
+    if (isNaN(a) || isNaN(b) || isNaN(c) || a === 0) return;
+    const d = (b * c) / a;
+    show(
+      'result-pr',
+      fmt(d),
+      `${fmt(a)} : ${fmt(b)} = ${fmt(c)} : ? → ? = (${fmt(b)} × ${fmt(c)}) / ${fmt(a)} = ${fmt(d)}`,
+    );
+  }
+
+  document.getElementById('calc-pr')!.addEventListener('click', calcPr);
+  document.getElementById('reset-pr')!.addEventListener('click', () => clearFields(['pr-a', 'pr-b', 'pr-c'], 'result-pr'));
+  ['pr-a', 'pr-b', 'pr-c'].forEach((id) => document.getElementById(id)!.addEventListener('input', calcPr));
+
+  // ── Scale ─────────────────────────────────────────────────
+  function calcSc() {
+    const a = num('sc-a'), b = num('sc-b'), f = num('sc-factor');
+    if (isNaN(a) || isNaN(b) || isNaN(f) || f <= 0) return;
+    show(
+      'result-sc',
+      `${fmt(a * f)} : ${fmt(b * f)}`,
+      `${fmt(a)} × ${fmt(f)} : ${fmt(b)} × ${fmt(f)} = ${fmt(a * f)} : ${fmt(b * f)}`,
+    );
+  }
+
+  document.getElementById('calc-sc')!.addEventListener('click', calcSc);
+  document.getElementById('reset-sc')!.addEventListener('click', () => clearFields(['sc-a', 'sc-b', 'sc-factor'], 'result-sc'));
+  ['sc-a', 'sc-b', 'sc-factor'].forEach((id) => document.getElementById(id)!.addEventListener('input', calcSc));
+
+  // ── Equivalence ───────────────────────────────────────────
+  function calcEq() {
+    const a1 = num('eq-a1'), b1 = num('eq-b1'), a2 = num('eq-a2'), b2 = num('eq-b2');
+    if ([a1, b1, a2, b2].some(isNaN) || b1 === 0 || b2 === 0) return;
+    const g1 = gcd(a1, b1), g2 = gcd(a2, b2);
+    const s1a = a1 / g1, s1b = b1 / g1;
+    const s2a = a2 / g2, s2b = b2 / g2;
+    const equivalent = Math.abs(a1 / b1 - a2 / b2) < 1e-9;
+    const color = equivalent ? 'var(--color-success)' : 'var(--color-error)';
+    show(
+      'result-eq',
+      equivalent ? 'Yes — equivalent' : 'No — not equivalent',
+      `${fmt(a1)}:${fmt(b1)} simplifies to ${fmt(s1a)}:${fmt(s1b)} · ${fmt(a2)}:${fmt(b2)} simplifies to ${fmt(s2a)}:${fmt(s2b)}`,
+      color,
+    );
+  }
+
+  document.getElementById('calc-eq')!.addEventListener('click', calcEq);
+  document.getElementById('reset-eq')!.addEventListener('click', () => clearFields(['eq-a1', 'eq-b1', 'eq-a2', 'eq-b2'], 'result-eq'));
+  ['eq-a1', 'eq-b1', 'eq-a2', 'eq-b2'].forEach((id) => document.getElementById(id)!.addEventListener('input', calcEq));
+</script>
