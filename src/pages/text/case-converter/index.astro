@@ -1,0 +1,319 @@
+---
+import ToolLayout from '../../../layouts/ToolLayout.astro';
+import { tools } from '../../../data/tools';
+
+const tool = tools.find((t) => t.slug === 'case-converter')!;
+
+const conversions = [
+  { id: 'upper',    label: 'UPPER CASE',    example: 'HELLO WORLD' },
+  { id: 'lower',    label: 'lower case',    example: 'hello world' },
+  { id: 'title',    label: 'Title Case',    example: 'Hello World' },
+  { id: 'sentence', label: 'Sentence case', example: 'Hello world. How are you?' },
+  { id: 'camel',    label: 'camelCase',     example: 'helloWorld' },
+  { id: 'pascal',   label: 'PascalCase',    example: 'HelloWorld' },
+  { id: 'snake',    label: 'snake_case',    example: 'hello_world' },
+  { id: 'kebab',    label: 'kebab-case',    example: 'hello-world' },
+  { id: 'constant', label: 'CONSTANT_CASE', example: 'HELLO_WORLD' },
+  { id: 'reverse',  label: 'esreveR',       example: 'dlroW olleH' },
+];
+
+const faqs = [
+  {
+    q: 'What is Title Case?',
+    a: 'Title Case capitalises the first letter of each major word. Small words like "a", "an", "the", "and", "or", "but", "in", "on", "at", "to", "for", "of" are kept lowercase unless they are the first or last word.',
+  },
+  {
+    q: 'What is Sentence case?',
+    a: 'Sentence case capitalises only the first letter of each sentence and proper nouns. Everything else is lowercase. It mimics how you would write an ordinary sentence.',
+  },
+  {
+    q: 'What is camelCase used for?',
+    a: 'camelCase is widely used in programming — for variable names in JavaScript, Java, and Swift. The first word is all lowercase; every subsequent word starts with a capital letter: myVariableName.',
+  },
+  {
+    q: 'What is snake_case used for?',
+    a: 'snake_case uses underscores instead of spaces and all letters are lowercase. It is the convention for variable names in Python, Ruby, and SQL column names.',
+  },
+  {
+    q: 'What is kebab-case used for?',
+    a: 'kebab-case uses hyphens instead of spaces and is all lowercase. It is the convention for CSS class names, HTML attributes, URL slugs, and file names in web projects.',
+  },
+];
+---
+
+<ToolLayout tool={tool} faqs={faqs}>
+  <div class="calc-cards" role="region" aria-label="Text case converter">
+
+    <!-- Input -->
+    <div class="calc-card">
+      <p class="calc-card-title">Enter your text</p>
+      <textarea
+        id="cc-input"
+        class="input cc-textarea"
+        rows="6"
+        placeholder="Type or paste text here…"
+        aria-label="Text to convert"
+        spellcheck="false"
+      ></textarea>
+    </div>
+
+    <!-- Conversion buttons -->
+    <div class="calc-card">
+      <p class="calc-card-title">Choose a conversion</p>
+      <div class="cc-btn-grid" role="group" aria-label="Conversion types">
+        {conversions.map((c) => (
+          <button
+            class="cc-conv-btn"
+            data-conv={c.id}
+            aria-label={`Convert to ${c.label}`}
+            title={`Example: ${c.example}`}
+          >
+            <span class="cc-btn-label">{c.label}</span>
+            <span class="cc-btn-example">{c.example}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <!-- Output -->
+    <div class="calc-card" id="cc-output-card" aria-live="polite" aria-atomic="true">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:0.875rem">
+        <p class="calc-card-title" style="margin:0">Result — <span id="cc-active-label" style="color:var(--color-primary)">select a conversion above</span></p>
+        <button class="btn btn-secondary" id="cc-copy" style="padding:0.375rem 0.875rem;font-size:var(--text-sm);display:flex;align-items:center;gap:0.375rem" aria-label="Copy result to clipboard">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          <span id="cc-copy-label">Copy</span>
+        </button>
+      </div>
+      <textarea
+        id="cc-output"
+        class="input cc-textarea cc-output-area"
+        rows="6"
+        readonly
+        aria-label="Converted text"
+        placeholder="Your converted text will appear here…"
+        spellcheck="false"
+      ></textarea>
+    </div>
+
+  </div>
+
+  <section class="mt-8 prose" aria-labelledby="case-guide">
+    <h2 id="case-guide">When to Use Each Case</h2>
+    <p>Choosing the right case convention makes your text or code immediately readable to the intended audience.</p>
+    <ul>
+      <li><strong>UPPER CASE</strong> — headings, acronyms, emphasis, form labels</li>
+      <li><strong>lower case</strong> — informal text, email addresses, domain names</li>
+      <li><strong>Title Case</strong> — article titles, book titles, headings, proper names</li>
+      <li><strong>Sentence case</strong> — UI labels, button text, body copy, descriptions</li>
+      <li><strong>camelCase</strong> — JavaScript/TypeScript variables and function names</li>
+      <li><strong>PascalCase</strong> — class names, React components, TypeScript types</li>
+      <li><strong>snake_case</strong> — Python variables, Ruby methods, database columns</li>
+      <li><strong>kebab-case</strong> — CSS classes, HTML attributes, URL slugs, file names</li>
+      <li><strong>CONSTANT_CASE</strong> — environment variables, global constants</li>
+    </ul>
+  </section>
+</ToolLayout>
+
+<style>
+  .cc-textarea {
+    width: 100%;
+    resize: vertical;
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.7;
+    min-height: 8rem;
+  }
+
+  .cc-output-area {
+    background: var(--color-bg-secondary);
+    cursor: text;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+  }
+
+  .cc-btn-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.625rem;
+  }
+
+  @media (min-width: 480px) {
+    .cc-btn-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  @media (min-width: 768px) {
+    .cc-btn-grid { grid-template-columns: repeat(5, 1fr); }
+  }
+
+  .cc-conv-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    padding: 0.75rem 0.875rem;
+    border-radius: var(--radius-lg);
+    border: 1.5px solid var(--color-border);
+    background: var(--color-bg-secondary);
+    color: var(--color-text);
+    cursor: pointer;
+    text-align: left;
+    transition: border-color var(--transition), background-color var(--transition), box-shadow var(--transition);
+    min-width: 0;
+  }
+
+  .cc-conv-btn:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary-light);
+  }
+
+  .cc-conv-btn.active {
+    border-color: var(--color-primary);
+    background: var(--color-primary-light);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 15%, transparent);
+  }
+
+  .cc-btn-label {
+    font-size: var(--text-sm);
+    font-weight: 700;
+    color: var(--color-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  .cc-conv-btn.active .cc-btn-label { color: var(--color-primary); }
+
+  .cc-btn-example {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+</style>
+
+<script>
+  const TITLE_MINORS = new Set([
+    'a','an','the','and','but','or','for','nor','on','at','to','by','in','of','up','as','is','it','vs',
+  ]);
+
+  function upper(t: string) { return t.toUpperCase(); }
+  function lower(t: string) { return t.toLowerCase(); }
+
+  function titleCase(t: string): string {
+    const words = t.split(/(\s+)/);
+    return words.map((chunk, i) => {
+      if (/^\s+$/.test(chunk)) return chunk;
+      const isFirst = words.slice(0, i).every((c) => /^\s*$/.test(c));
+      const isLast  = words.slice(i + 1).every((c) => /^\s*$/.test(c));
+      const lower = chunk.toLowerCase();
+      if (!isFirst && !isLast && TITLE_MINORS.has(lower)) return lower;
+      return lower.charAt(0).toUpperCase() + lower.slice(1);
+    }).join('');
+  }
+
+  function sentenceCase(t: string): string {
+    return t
+      .toLowerCase()
+      .replace(/(^\s*[\wÀ-ɏ])|([.!?]+\s+[\wÀ-ɏ])/g, (m) => m.toUpperCase());
+  }
+
+  function splitWords(t: string): string[] {
+    // Handle camel/pascal input too
+    return t
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+      .split(/[\s_\-\./\\|]+/)
+      .filter(Boolean);
+  }
+
+  function camelCase(t: string): string {
+    const words = splitWords(t);
+    return words.map((w, i) => {
+      const l = w.toLowerCase();
+      return i === 0 ? l : l.charAt(0).toUpperCase() + l.slice(1);
+    }).join('');
+  }
+
+  function pascalCase(t: string): string {
+    return splitWords(t).map((w) => {
+      const l = w.toLowerCase();
+      return l.charAt(0).toUpperCase() + l.slice(1);
+    }).join('');
+  }
+
+  function snakeCase(t: string): string {
+    return splitWords(t).join('_').toLowerCase();
+  }
+
+  function kebabCase(t: string): string {
+    return splitWords(t).join('-').toLowerCase();
+  }
+
+  function constantCase(t: string): string {
+    return splitWords(t).join('_').toUpperCase();
+  }
+
+  function reverseText(t: string): string {
+    return t.split('').reverse().join('');
+  }
+
+  const converters: Record<string, (t: string) => string> = {
+    upper, lower, title: titleCase, sentence: sentenceCase,
+    camel: camelCase, pascal: pascalCase, snake: snakeCase,
+    kebab: kebabCase, constant: constantCase, reverse: reverseText,
+  };
+
+  const labelMap: Record<string, string> = {
+    upper: 'UPPER CASE', lower: 'lower case', title: 'Title Case',
+    sentence: 'Sentence case', camel: 'camelCase', pascal: 'PascalCase',
+    snake: 'snake_case', kebab: 'kebab-case', constant: 'CONSTANT_CASE',
+    reverse: 'Reversed',
+  };
+
+  let activeConv: string | null = null;
+
+  const inputEl  = document.getElementById('cc-input')  as HTMLTextAreaElement;
+  const outputEl = document.getElementById('cc-output') as HTMLTextAreaElement;
+  const labelEl  = document.getElementById('cc-active-label')!;
+  const copyBtn  = document.getElementById('cc-copy')!;
+  const copyLabel = document.getElementById('cc-copy-label')!;
+
+  function applyConversion() {
+    if (!activeConv) return;
+    outputEl.value = converters[activeConv](inputEl.value);
+  }
+
+  document.querySelectorAll<HTMLButtonElement>('.cc-conv-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.cc-conv-btn').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeConv = btn.dataset.conv!;
+      labelEl.textContent = labelMap[activeConv];
+      applyConversion();
+    });
+  });
+
+  inputEl.addEventListener('input', applyConversion);
+
+  copyBtn.addEventListener('click', async () => {
+    const text = outputEl.value;
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      copyLabel.textContent = 'Copied!';
+      setTimeout(() => (copyLabel.textContent = 'Copy'), 2000);
+    } catch {
+      outputEl.select();
+      document.execCommand('copy');
+      copyLabel.textContent = 'Copied!';
+      setTimeout(() => (copyLabel.textContent = 'Copy'), 2000);
+    }
+  });
+</script>

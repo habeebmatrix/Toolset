@@ -1,0 +1,346 @@
+---
+import ToolLayout from '../../../layouts/ToolLayout.astro';
+import { tools } from '../../../data/tools';
+
+const tool = tools.find((t) => t.slug === 'word-counter')!;
+
+const faqs = [
+  {
+    q: 'How are words counted?',
+    a: 'Words are counted by splitting the text on whitespace and filtering out empty segments. Hyphenated words (e.g. "well-known") are counted as one word.',
+  },
+  {
+    q: 'How is reading time estimated?',
+    a: 'Reading time uses the average adult silent reading speed of 238 words per minute (WPM), based on research published in Reading Research Quarterly.',
+  },
+  {
+    q: 'How is speaking time estimated?',
+    a: 'Speaking time uses an average of 130 WPM, which reflects a comfortable, clear presentation pace.',
+  },
+  {
+    q: 'How are sentences counted?',
+    a: 'Sentences are counted by detecting punctuation that ends a sentence (., !, ?) followed by a space or end of text. Abbreviations like "Dr." may slightly over-count.',
+  },
+  {
+    q: 'What counts as a paragraph?',
+    a: 'A paragraph is a block of text separated from the next by one or more blank lines. Single line breaks within a block are not counted as new paragraphs.',
+  },
+];
+---
+
+<ToolLayout tool={tool} faqs={faqs}>
+  <div class="calc-cards" role="region" aria-label="Word and character counter">
+
+    <!-- Input -->
+    <div class="calc-card">
+      <p class="calc-card-title">Paste or type your text</p>
+      <textarea
+        id="wc-input"
+        class="input wc-textarea"
+        rows="10"
+        placeholder="Start typing or paste your text here…"
+        aria-label="Text to analyse"
+        spellcheck="true"
+      ></textarea>
+      <div style="display:flex;justify-content:flex-end;margin-top:0.625rem">
+        <button class="btn btn-secondary" id="wc-clear" style="padding:0.375rem 0.875rem;font-size:var(--text-sm)">Clear</button>
+      </div>
+    </div>
+
+    <!-- Stats grid — always visible, zeros until text entered -->
+    <div aria-live="polite" aria-atomic="true">
+      <div class="wc-stats-grid">
+        <div class="wc-stat wc-stat--primary">
+          <p class="wc-stat-value" id="wc-words">0</p>
+          <p class="wc-stat-label">Words</p>
+        </div>
+        <div class="wc-stat wc-stat--primary">
+          <p class="wc-stat-value" id="wc-chars">0</p>
+          <p class="wc-stat-label">Characters</p>
+        </div>
+        <div class="wc-stat">
+          <p class="wc-stat-value" id="wc-chars-no-space">0</p>
+          <p class="wc-stat-label">Chars (no spaces)</p>
+        </div>
+        <div class="wc-stat">
+          <p class="wc-stat-value" id="wc-sentences">0</p>
+          <p class="wc-stat-label">Sentences</p>
+        </div>
+        <div class="wc-stat">
+          <p class="wc-stat-value" id="wc-paragraphs">0</p>
+          <p class="wc-stat-label">Paragraphs</p>
+        </div>
+        <div class="wc-stat">
+          <p class="wc-stat-value" id="wc-lines">0</p>
+          <p class="wc-stat-label">Lines</p>
+        </div>
+      </div>
+
+      <!-- Time estimates -->
+      <div class="calc-card" style="margin-top:0">
+        <p class="calc-card-title">Time estimates</p>
+        <div class="wc-time-grid">
+          <div class="wc-time-row">
+            <div>
+              <p class="wc-time-label">Reading time</p>
+              <p class="wc-time-sub">at 238 words/min</p>
+            </div>
+            <p class="wc-time-value" id="wc-read-time">—</p>
+          </div>
+          <div class="wc-time-row">
+            <div>
+              <p class="wc-time-label">Speaking time</p>
+              <p class="wc-time-sub">at 130 words/min</p>
+            </div>
+            <p class="wc-time-value" id="wc-speak-time">—</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Keyword density (top 5 words) -->
+      <div class="calc-card" style="margin-top:0" id="wc-keyword-card">
+        <p class="calc-card-title">Top keywords</p>
+        <p id="wc-keywords-empty" style="font-size:var(--text-sm);color:var(--color-text-muted)">Start typing to see keyword density.</p>
+        <div id="wc-keywords-list" class="hidden"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="mt-8 prose" aria-labelledby="wc-guide">
+    <h2 id="wc-guide">Why Word and Character Counts Matter</h2>
+    <p>Word counts are essential for meeting requirements in academic essays, articles, blog posts, social media captions, and cover letters. Character counts matter for SEO meta descriptions (under 160 characters), tweet limits (280 characters), and SMS (160 characters per segment).</p>
+    <h3>Common Limits to Know</h3>
+    <ul>
+      <li><strong>Tweet / X post:</strong> 280 characters</li>
+      <li><strong>SEO meta description:</strong> 150–160 characters</li>
+      <li><strong>SEO title tag:</strong> 50–60 characters</li>
+      <li><strong>LinkedIn post:</strong> 3,000 characters before "see more"</li>
+      <li><strong>SMS segment:</strong> 160 characters</li>
+      <li><strong>University essay (typical):</strong> 1,000–5,000 words</li>
+    </ul>
+  </section>
+</ToolLayout>
+
+<style>
+  .wc-textarea {
+    width: 100%;
+    resize: vertical;
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.7;
+    min-height: 12rem;
+  }
+
+  .wc-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 0.875rem;
+  }
+
+  @media (min-width: 480px) {
+    .wc-stats-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  @media (min-width: 768px) {
+    .wc-stats-grid { grid-template-columns: repeat(6, 1fr); }
+  }
+
+  .wc-stat {
+    background: var(--color-bg-card);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: 1rem 0.75rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .wc-stat--primary {
+    border-color: var(--color-primary-muted);
+    background: var(--color-primary-light);
+  }
+
+  .wc-stat-value {
+    font-size: var(--text-2xl);
+    font-weight: 800;
+    color: var(--color-text);
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .wc-stat--primary .wc-stat-value { color: var(--color-primary); }
+
+  .wc-stat-label {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .wc-time-grid { display: flex; flex-direction: column; gap: 0; }
+
+  .wc-time-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .wc-time-row:last-child { border-bottom: none; }
+
+  .wc-time-label {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .wc-time-sub {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    margin-top: 0.125rem;
+  }
+
+  .wc-time-value {
+    font-size: var(--text-lg);
+    font-weight: 700;
+    color: var(--color-text);
+    white-space: nowrap;
+  }
+
+  .kw-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .kw-row:last-child { border-bottom: none; }
+
+  .kw-word {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-text);
+    min-width: 6rem;
+  }
+
+  .kw-bar-wrap {
+    flex: 1;
+    height: 0.5rem;
+    background: var(--color-border);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+  }
+
+  .kw-bar {
+    height: 100%;
+    background: var(--color-primary);
+    border-radius: var(--radius-full);
+    transition: width 0.3s ease;
+  }
+
+  .kw-count {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    min-width: 3rem;
+    text-align: right;
+  }
+</style>
+
+<script>
+  const STOP_WORDS = new Set([
+    'the','a','an','and','or','but','in','on','at','to','for','of','with',
+    'by','from','as','is','was','are','were','be','been','being','have',
+    'has','had','do','does','did','will','would','could','should','may',
+    'might','this','that','these','those','it','its','i','you','he','she',
+    'we','they','what','which','who','how','when','where','why','not','no',
+    'so','if','then','than','there','their','they\'re','our','your','his','her',
+  ]);
+
+  function formatTime(minutes: number): string {
+    if (minutes < 1) return '< 1 min';
+    const m = Math.round(minutes);
+    if (m < 60) return `${m} min`;
+    const h = Math.floor(m / 60);
+    const rem = m % 60;
+    return rem === 0 ? `${h} hr` : `${h} hr ${rem} min`;
+  }
+
+  function set(id: string, text: string) {
+    document.getElementById(id)!.textContent = text;
+  }
+
+  function analyse(text: string) {
+    const words = text.trim() === '' ? [] : text.trim().split(/\s+/).filter(Boolean);
+    const chars = text.length;
+    const charsNoSpace = text.replace(/\s/g, '').length;
+    const sentences = text.trim() === ''
+      ? 0
+      : (text.match(/[^.!?]*[.!?]+/g) ?? (text.trim().length > 0 ? ['x'] : [])).length;
+    const paragraphs = text.trim() === '' ? 0 : text.split(/\n\s*\n/).filter((p) => p.trim().length > 0).length;
+    const lines = text.trim() === '' ? 0 : text.split('\n').filter((l) => l.trim().length > 0).length;
+
+    set('wc-words', words.length.toLocaleString());
+    set('wc-chars', chars.toLocaleString());
+    set('wc-chars-no-space', charsNoSpace.toLocaleString());
+    set('wc-sentences', sentences.toLocaleString());
+    set('wc-paragraphs', paragraphs.toLocaleString());
+    set('wc-lines', lines.toLocaleString());
+
+    const wc = words.length;
+    set('wc-read-time', wc === 0 ? '—' : formatTime(wc / 238));
+    set('wc-speak-time', wc === 0 ? '—' : formatTime(wc / 130));
+
+    // Top keywords
+    const freq = new Map<string, number>();
+    words.forEach((w) => {
+      const clean = w.toLowerCase().replace(/[^a-z0-9'-]/g, '');
+      if (clean.length > 2 && !STOP_WORDS.has(clean)) {
+        freq.set(clean, (freq.get(clean) ?? 0) + 1);
+      }
+    });
+
+    const top = [...freq.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8);
+
+    const emptyEl = document.getElementById('wc-keywords-empty')!;
+    const listEl = document.getElementById('wc-keywords-list')!;
+
+    if (top.length === 0) {
+      emptyEl.classList.remove('hidden');
+      listEl.classList.add('hidden');
+      listEl.innerHTML = '';
+    } else {
+      emptyEl.classList.add('hidden');
+      listEl.classList.remove('hidden');
+      const maxCount = top[0][1];
+      listEl.innerHTML = top.map(([word, count]) => `
+        <div class="kw-row">
+          <span class="kw-word">${word}</span>
+          <div class="kw-bar-wrap"><div class="kw-bar" style="width:${(count / maxCount) * 100}%"></div></div>
+          <span class="kw-count">${count}×</span>
+        </div>
+      `).join('');
+    }
+  }
+
+  const textarea = document.getElementById('wc-input') as HTMLTextAreaElement;
+  textarea.addEventListener('input', () => analyse(textarea.value));
+
+  document.getElementById('wc-clear')!.addEventListener('click', () => {
+    textarea.value = '';
+    analyse('');
+    textarea.focus();
+  });
+
+  // Run once on load in case browser restores textarea content
+  analyse(textarea.value);
+</script>
