@@ -1,0 +1,212 @@
+---
+import ToolLayout from '../../../layouts/ToolLayout.astro';
+import { tools } from '../../../data/tools';
+
+const tool = tools.find((t) => t.slug === 'loan-emi-calculator')!;
+
+const faqs = [
+  {
+    q: 'What is EMI?',
+    a: 'EMI stands for Equated Monthly Instalment. It is the fixed amount you pay each month to repay a loan, consisting of both principal and interest.',
+  },
+  {
+    q: 'How is EMI calculated?',
+    a: 'EMI = P × r × (1+r)^n / [(1+r)^n − 1], where P is the principal, r is the monthly interest rate (annual rate ÷ 12 ÷ 100), and n is the number of monthly instalments.',
+  },
+  {
+    q: 'Does paying a higher EMI save money?',
+    a: 'Yes. A higher EMI shortens the loan tenure, which reduces the total interest paid over the life of the loan.',
+  },
+  {
+    q: 'What is an amortisation schedule?',
+    a: 'An amortisation schedule is a month-by-month breakdown showing how much of each payment goes towards principal and how much goes towards interest. Early payments are interest-heavy; later payments shift towards principal.',
+  },
+  {
+    q: 'Can I prepay my loan?',
+    a: 'Most lenders allow prepayments, which reduce the outstanding principal and therefore the total interest. Check your loan agreement for prepayment charges.',
+  },
+];
+---
+
+<ToolLayout tool={tool} faqs={faqs}>
+  <div class="calc-cards" role="region" aria-label="Loan EMI calculator">
+
+    <div class="calc-card">
+      <p class="calc-card-title">Calculate your EMI</p>
+      <div class="calc-sentence">
+        <span>I want to borrow</span>
+        <input class="input-inline" type="number" id="emi-principal" placeholder="e.g. 500000" min="1" step="any" aria-label="Loan amount" style="width:9rem" />
+        <span>at</span>
+        <input class="input-inline" type="number" id="emi-rate" placeholder="e.g. 8.5" min="0" max="100" step="any" aria-label="Annual interest rate" />
+        <span>% per year for</span>
+        <input class="input-inline" type="number" id="emi-years" placeholder="e.g. 5" min="0.5" max="30" step="0.5" aria-label="Loan tenure in years" />
+        <span>years</span>
+      </div>
+      <div class="calc-card-actions">
+        <button class="btn btn-primary" id="calc-emi">Calculate EMI</button>
+        <button class="btn btn-secondary" id="reset-emi">Reset</button>
+      </div>
+    </div>
+
+    <!-- Summary results -->
+    <div id="emi-results" class="hidden" aria-live="polite" aria-atomic="true">
+      <div class="stats-grid" style="margin-bottom:0.875rem">
+        <div class="stat-card stat-card--primary">
+          <p class="stat-label">Monthly EMI</p>
+          <p class="stat-value" id="val-emi">—</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Total Amount Paid</p>
+          <p class="stat-value" id="val-total">—</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Total Interest</p>
+          <p class="stat-value" id="val-interest">—</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Interest Share</p>
+          <p class="stat-value" id="val-interest-pct">—</p>
+        </div>
+      </div>
+
+      <!-- Amortisation table -->
+      <div class="calc-card" style="margin-top:0;padding:0;overflow:hidden">
+        <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--color-border);display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+          <p class="calc-card-title" style="margin:0">Month-by-month Amortisation</p>
+          <button class="btn btn-secondary" id="toggle-amort" style="padding:0.375rem 0.875rem;font-size:var(--text-sm)">Show table</button>
+        </div>
+        <div id="amort-wrap" class="hidden">
+          <div class="table-wrap" style="border:none;border-radius:0;margin:0;max-height:26rem;overflow-y:auto">
+            <table class="data-table" id="amort-table" aria-label="Amortisation schedule">
+              <thead>
+                <tr>
+                  <th>Month</th>
+                  <th>EMI</th>
+                  <th>Principal</th>
+                  <th>Interest</th>
+                  <th>Balance</th>
+                </tr>
+              </thead>
+              <tbody id="amort-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="mt-8 prose" aria-labelledby="emi-explainer">
+    <h2 id="emi-explainer">How EMI is Calculated</h2>
+    <p>The EMI formula uses compound interest to spread repayment equally across all months:</p>
+    <p><code>EMI = P × r × (1+r)^n / [(1+r)^n − 1]</code></p>
+    <p>Where P = Principal, r = monthly interest rate (annual rate ÷ 1200), n = number of months.</p>
+    <h3>How Amortisation Works</h3>
+    <p>In early months, most of your EMI goes toward interest because the outstanding balance is high. As the balance falls, the interest portion shrinks and more of each payment goes to the principal. This is why prepaying a loan early has an outsized impact on the total interest saved.</p>
+  </section>
+</ToolLayout>
+
+<style>
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.875rem;
+  }
+  @media (min-width: 640px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
+
+  .stat-card {
+    background: var(--color-bg-card);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: 1rem 1.125rem;
+  }
+  .stat-card--primary {
+    border-color: var(--color-primary-muted);
+    background: var(--color-primary-light);
+  }
+  .stat-label {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--color-text-muted);
+    margin-bottom: 0.25rem;
+  }
+  .stat-card--primary .stat-label { color: var(--color-primary); }
+  .stat-value {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    color: var(--color-text);
+    word-break: break-all;
+  }
+</style>
+
+<script>
+  function currency(n: number): string {
+    return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function set(id: string, text: string) {
+    document.getElementById(id)!.textContent = text;
+  }
+
+  function num(id: string): number {
+    return parseFloat((document.getElementById(id) as HTMLInputElement).value);
+  }
+
+  function calcEMI() {
+    const P = num('emi-principal');
+    const annualRate = num('emi-rate');
+    const years = num('emi-years');
+
+    if ([P, annualRate, years].some(isNaN) || P <= 0 || years <= 0 || annualRate < 0) return;
+
+    const n = Math.round(years * 12);
+    const r = annualRate / 1200;
+    const emi = r === 0 ? P / n : P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
+    const total = emi * n;
+    const interest = total - P;
+
+    set('val-emi', currency(emi));
+    set('val-total', currency(total));
+    set('val-interest', currency(interest));
+    set('val-interest-pct', (interest / P * 100).toFixed(1) + '%');
+
+    // Build amortisation
+    const tbody = document.getElementById('amort-body')!;
+    tbody.innerHTML = '';
+    let balance = P;
+    for (let m = 1; m <= n; m++) {
+      const interestPart = balance * r;
+      const principalPart = emi - interestPart;
+      balance = Math.max(0, balance - principalPart);
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${m}</td><td>${currency(emi)}</td><td>${currency(principalPart)}</td><td>${currency(interestPart)}</td><td>${currency(balance)}</td>`;
+      tbody.appendChild(tr);
+    }
+
+    document.getElementById('emi-results')!.classList.remove('hidden');
+  }
+
+  document.getElementById('calc-emi')!.addEventListener('click', calcEMI);
+
+  document.getElementById('reset-emi')!.addEventListener('click', () => {
+    ['emi-principal', 'emi-rate', 'emi-years'].forEach(
+      (id) => ((document.getElementById(id) as HTMLInputElement).value = '')
+    );
+    document.getElementById('emi-results')!.classList.add('hidden');
+    document.getElementById('amort-wrap')!.classList.add('hidden');
+    document.getElementById('toggle-amort')!.textContent = 'Show table';
+  });
+
+  ['emi-principal', 'emi-rate', 'emi-years'].forEach((id) =>
+    document.getElementById(id)!.addEventListener('input', calcEMI)
+  );
+
+  document.getElementById('toggle-amort')!.addEventListener('click', () => {
+    const wrap = document.getElementById('amort-wrap')!;
+    const btn = document.getElementById('toggle-amort')!;
+    const hidden = wrap.classList.toggle('hidden');
+    btn.textContent = hidden ? 'Show table' : 'Hide table';
+  });
+</script>

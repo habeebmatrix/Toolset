@@ -1,0 +1,232 @@
+---
+import ToolLayout from '../../../layouts/ToolLayout.astro';
+import { tools } from '../../../data/tools';
+
+const tool = tools.find((t) => t.slug === 'bmi-calculator')!;
+
+const faqs = [
+  {
+    q: 'What is BMI?',
+    a: 'Body Mass Index (BMI) is a measure that uses your height and weight to estimate whether you are in a healthy weight range. BMI = weight (kg) ÷ height² (m).',
+  },
+  {
+    q: 'What are the BMI categories?',
+    a: 'Underweight: below 18.5 | Normal weight: 18.5–24.9 | Overweight: 25–29.9 | Obese (Class I): 30–34.9 | Obese (Class II): 35–39.9 | Severely obese (Class III): 40 and above.',
+  },
+  {
+    q: 'Is BMI accurate?',
+    a: 'BMI is a useful screening tool, but it has limitations. It does not distinguish between muscle and fat, so athletes may show a high BMI despite low body fat. Age, sex, and ethnicity also affect the interpretation.',
+  },
+  {
+    q: 'What is a healthy BMI for adults?',
+    a: 'For most adults, a BMI between 18.5 and 24.9 is considered healthy. However, always consult a healthcare professional for personalised advice.',
+  },
+  {
+    q: 'How do I calculate BMI in imperial units?',
+    a: 'BMI = (weight in lbs × 703) ÷ (height in inches)². This calculator handles the conversion automatically.',
+  },
+];
+
+const categories = [
+  { label: 'Underweight', range: '< 18.5', color: '#3B82F6', max: 18.5 },
+  { label: 'Normal', range: '18.5 – 24.9', color: '#10B981', max: 25 },
+  { label: 'Overweight', range: '25 – 29.9', color: '#F59E0B', max: 30 },
+  { label: 'Obese', range: '≥ 30', color: '#EF4444', max: Infinity },
+];
+---
+
+<ToolLayout tool={tool} faqs={faqs}>
+  <div class="calc-cards" role="region" aria-label="BMI calculator">
+
+    <!-- Metric -->
+    <div class="calc-card">
+      <p class="calc-card-title">Metric (cm / kg)</p>
+      <div class="calc-sentence">
+        <span>I am</span>
+        <input class="input-inline" type="number" id="bmi-height-cm" placeholder="e.g. 175" min="50" max="300" step="any" aria-label="Height in centimetres" />
+        <span>cm tall and weigh</span>
+        <input class="input-inline" type="number" id="bmi-weight-kg" placeholder="e.g. 70" min="10" max="500" step="any" aria-label="Weight in kilograms" />
+        <span>kg</span>
+      </div>
+      <div class="calc-card-actions">
+        <button class="btn btn-primary" id="calc-bmi-metric">Calculate BMI</button>
+        <button class="btn btn-secondary" id="reset-bmi-metric">Reset</button>
+      </div>
+    </div>
+
+    <!-- Imperial -->
+    <div class="calc-card">
+      <p class="calc-card-title">Imperial (ft / lbs)</p>
+      <div class="calc-sentence">
+        <span>I am</span>
+        <input class="input-inline" type="number" id="bmi-height-ft" placeholder="e.g. 5" min="0" max="9" step="1" aria-label="Height feet" style="width:5rem" />
+        <span>ft</span>
+        <input class="input-inline" type="number" id="bmi-height-in" placeholder="e.g. 9" min="0" max="11" step="1" aria-label="Height inches" style="width:5rem" />
+        <span>in and weigh</span>
+        <input class="input-inline" type="number" id="bmi-weight-lbs" placeholder="e.g. 154" min="20" max="1100" step="any" aria-label="Weight in pounds" />
+        <span>lbs</span>
+      </div>
+      <div class="calc-card-actions">
+        <button class="btn btn-primary" id="calc-bmi-imperial">Calculate BMI</button>
+        <button class="btn btn-secondary" id="reset-bmi-imperial">Reset</button>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div id="bmi-result" class="hidden calc-card" aria-live="polite" aria-atomic="true" style="text-align:center">
+      <p class="calc-card-title" style="text-align:left">Your Result</p>
+      <p id="bmi-value" style="font-size:clamp(2.5rem,8vw,4rem);font-weight:800;letter-spacing:-0.03em;line-height:1;margin-bottom:0.25rem"></p>
+      <p id="bmi-category" style="font-size:var(--text-xl);font-weight:700;margin-bottom:1.5rem"></p>
+
+      <!-- Visual bar -->
+      <div class="bmi-bar" aria-hidden="true">
+        <div class="bmi-bar-track">
+          <div class="bmi-bar-seg" style="background:#3B82F6;flex:1"></div>
+          <div class="bmi-bar-seg" style="background:#10B981;flex:1.3"></div>
+          <div class="bmi-bar-seg" style="background:#F59E0B;flex:1"></div>
+          <div class="bmi-bar-seg" style="background:#EF4444;flex:2"></div>
+          <div class="bmi-marker" id="bmi-marker"></div>
+        </div>
+        <div class="bmi-bar-labels">
+          <span>Underweight<br/>&lt;18.5</span>
+          <span>Normal<br/>18.5–24.9</span>
+          <span>Overweight<br/>25–29.9</span>
+          <span>Obese<br/>≥30</span>
+        </div>
+      </div>
+
+      <p id="bmi-healthy-range" style="font-size:var(--text-sm);color:var(--color-text-secondary);margin-top:1rem;text-align:left"></p>
+    </div>
+
+  </div>
+
+  <section class="mt-8 prose" aria-labelledby="bmi-explainer">
+    <h2 id="bmi-explainer">Understanding BMI</h2>
+    <p>BMI is calculated by dividing your weight in kilograms by the square of your height in metres:</p>
+    <p><code>BMI = weight (kg) ÷ height² (m)</code></p>
+    <p>While BMI is a widely used screening tool, it does not directly measure body fat. Factors like muscle mass, bone density, age, and ethnicity can affect interpretation. Always consult a healthcare professional for a full health assessment.</p>
+    <h3>Healthy Weight Range</h3>
+    <p>For a given height, the healthy weight range corresponds to a BMI between 18.5 and 24.9. The calculator shows your healthy weight range after computing your BMI.</p>
+  </section>
+</ToolLayout>
+
+<style>
+  .bmi-bar { margin-top: 1rem; }
+  .bmi-bar-track {
+    position: relative;
+    display: flex;
+    height: 1rem;
+    border-radius: var(--radius-full);
+    overflow: visible;
+    margin-bottom: 0.5rem;
+    gap: 2px;
+  }
+  .bmi-bar-seg { border-radius: 2px; }
+  .bmi-bar-seg:first-child { border-radius: var(--radius-full) 2px 2px var(--radius-full); }
+  .bmi-bar-seg:last-child { border-radius: 2px var(--radius-full) var(--radius-full) 2px; }
+  .bmi-marker {
+    position: absolute;
+    top: -4px;
+    width: 6px;
+    height: calc(100% + 8px);
+    background: var(--color-text);
+    border-radius: var(--radius-full);
+    transform: translateX(-50%);
+    transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 0 2px var(--color-bg);
+  }
+  .bmi-bar-labels {
+    display: flex;
+    justify-content: space-around;
+    font-size: 0.65rem;
+    color: var(--color-text-muted);
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.4;
+    padding: 0 4px;
+  }
+  .bmi-bar-labels span { flex: 1; }
+</style>
+
+<script>
+  function calcBMI(weightKg: number, heightM: number) {
+    if ([weightKg, heightM].some(isNaN) || weightKg <= 0 || heightM <= 0) return;
+    const bmi = weightKg / (heightM * heightM);
+    showBMI(bmi, weightKg, heightM);
+  }
+
+  function showBMI(bmi: number, weightKg: number, heightM: number) {
+    const categories = [
+      { label: 'Underweight', color: '#3B82F6', min: 0, max: 18.5 },
+      { label: 'Normal weight', color: '#10B981', min: 18.5, max: 25 },
+      { label: 'Overweight', color: '#F59E0B', min: 25, max: 30 },
+      { label: 'Obese', color: '#EF4444', min: 30, max: Infinity },
+    ];
+    const cat = categories.find((c) => bmi < c.max)!;
+
+    const resultEl = document.getElementById('bmi-result')!;
+    resultEl.classList.remove('hidden');
+    document.getElementById('bmi-value')!.textContent = bmi.toFixed(1);
+    document.getElementById('bmi-value')!.style.color = cat.color;
+    document.getElementById('bmi-category')!.textContent = cat.label;
+    document.getElementById('bmi-category')!.style.color = cat.color;
+
+    // Healthy weight range for this height
+    const minHealthy = 18.5 * heightM * heightM;
+    const maxHealthy = 24.9 * heightM * heightM;
+    document.getElementById('bmi-healthy-range')!.textContent =
+      `Healthy weight range for your height: ${minHealthy.toFixed(1)} kg – ${maxHealthy.toFixed(1)} kg`;
+
+    // Marker position (clamp BMI 12–45 → 0–100%)
+    const clampedBMI = Math.max(12, Math.min(45, bmi));
+    const pct = ((clampedBMI - 12) / (45 - 12)) * 100;
+    document.getElementById('bmi-marker')!.style.left = `${pct}%`;
+  }
+
+  function num(id: string): number {
+    return parseFloat((document.getElementById(id) as HTMLInputElement).value);
+  }
+
+  document.getElementById('calc-bmi-metric')!.addEventListener('click', () => {
+    const h = num('bmi-height-cm') / 100;
+    const w = num('bmi-weight-kg');
+    calcBMI(w, h);
+  });
+
+  document.getElementById('calc-bmi-imperial')!.addEventListener('click', () => {
+    const ft = num('bmi-height-ft') || 0;
+    const inches = (num('bmi-height-in') || 0) + ft * 12;
+    const heightM = inches * 0.0254;
+    const weightKg = num('bmi-weight-lbs') * 0.453592;
+    calcBMI(weightKg, heightM);
+  });
+
+  ['bmi-height-cm', 'bmi-weight-kg'].forEach((id) =>
+    document.getElementById(id)!.addEventListener('input', () => {
+      const h = num('bmi-height-cm') / 100;
+      const w = num('bmi-weight-kg');
+      if (!isNaN(h) && !isNaN(w)) calcBMI(w, h);
+    })
+  );
+
+  ['bmi-height-ft', 'bmi-height-in', 'bmi-weight-lbs'].forEach((id) =>
+    document.getElementById(id)!.addEventListener('input', () => {
+      const ft = num('bmi-height-ft') || 0;
+      const inches = (num('bmi-height-in') || 0) + ft * 12;
+      const w = num('bmi-weight-lbs');
+      if (inches > 0 && !isNaN(w)) calcBMI(w * 0.453592, inches * 0.0254);
+    })
+  );
+
+  function resetBMI(fields: string[]) {
+    fields.forEach((id) => ((document.getElementById(id) as HTMLInputElement).value = ''));
+    document.getElementById('bmi-result')!.classList.add('hidden');
+  }
+
+  document.getElementById('reset-bmi-metric')!.addEventListener('click', () =>
+    resetBMI(['bmi-height-cm', 'bmi-weight-kg'])
+  );
+  document.getElementById('reset-bmi-imperial')!.addEventListener('click', () =>
+    resetBMI(['bmi-height-ft', 'bmi-height-in', 'bmi-weight-lbs'])
+  );
+</script>
