@@ -54,15 +54,6 @@ const faqs = [
           />
           <p id="dot-hint" class="dot-hint">WWYY — week (01–52) then year (00–99)</p>
         </div>
-        <div class="dot-field-wrap">
-          <label for="dot-ref-date" class="dot-label">Reference date</label>
-          <input
-            id="dot-ref-date"
-            type="date"
-            class="input dot-input"
-            aria-label="Reference date for age calculation"
-          />
-        </div>
       </div>
     </div>
 
@@ -125,11 +116,6 @@ const faqs = [
     display: flex;
     flex-direction: column;
     gap: 1rem;
-  }
-
-  @media (min-width: 560px) {
-    .dot-input-row { flex-direction: row; }
-    .dot-field-wrap { flex: 1; }
   }
 
   .dot-label {
@@ -262,16 +248,10 @@ const faqs = [
 </style>
 
 <script>
-  const input   = document.getElementById('dot-code') as HTMLInputElement;
-  const refDate = document.getElementById('dot-ref-date') as HTMLInputElement;
-
-  // Pre-fill today
-  const today = new Date();
-  refDate.value = today.toISOString().slice(0, 10);
+  const input = document.getElementById('dot-code') as HTMLInputElement;
 
   function weekToDate(week: number, year2: number): Date {
     const fullYear = year2 < 70 ? 2000 + year2 : 1900 + year2;
-    // ISO week 1 = first week with Thursday of the year
     const jan4 = new Date(fullYear, 0, 4);
     const startOfWeek1 = new Date(jan4);
     startOfWeek1.setDate(jan4.getDate() - ((jan4.getDay() + 6) % 7));
@@ -286,7 +266,7 @@ const faqs = [
 
   function calculate() {
     const code = input.value.trim();
-    const ref  = refDate.value ? new Date(refDate.value) : new Date();
+    const ref  = new Date();
 
     const resultEl      = document.getElementById('dot-result')!;
     const placeholderEl = document.getElementById('dot-placeholder')!;
@@ -366,6 +346,5 @@ const faqs = [
   }
 
   input.addEventListener('input', calculate);
-  refDate.addEventListener('change', calculate);
   calculate();
 </script>
