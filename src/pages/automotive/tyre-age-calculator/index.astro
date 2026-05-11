@@ -1,0 +1,371 @@
+---
+import ToolLayout from '../../../layouts/ToolLayout.astro';
+import { tools } from '../../../data/tools';
+
+const tool = tools.find((t) => t.slug === 'tyre-age-calculator')!;
+
+const faqs = [
+  {
+    q: 'Where do I find the DOT code on my tyre?',
+    a: 'Look on the sidewall of the tyre for the letters "DOT". The full DOT code follows, and the last 4 digits are the week and year of manufacture (e.g. 2423 = week 24 of 2023).',
+  },
+  {
+    q: 'How old is too old for tyres?',
+    a: 'Most tyre manufacturers and safety organisations recommend replacing tyres after 6 years of service regardless of tread depth, and consider tyres beyond 10 years unsafe even if they look fine. Heat, UV exposure, and oxidation degrade rubber internally.',
+  },
+  {
+    q: 'What if my DOT code only has 3 digits?',
+    a: 'Tyres made before 2000 used a 3-digit code (week + single digit for decade). If you find a 3-digit code, the tyre is over 26 years old and must be replaced immediately.',
+  },
+  {
+    q: 'Does tyre age matter if I rarely drive?',
+    a: 'Yes. Even if tyres have low mileage, the rubber compounds degrade over time due to oxidation and UV exposure. A lightly-used 8-year-old tyre can be more dangerous than a frequently-used 4-year-old tyre.',
+  },
+  {
+    q: 'Are spare tyres affected by age too?',
+    a: 'Absolutely. Spare tyres — especially compact "space saver" spares — are subject to the same age limits. Check the DOT code on your spare tyre at every annual service.',
+  },
+];
+---
+
+<ToolLayout tool={tool} faqs={faqs}>
+  <div class="calc-cards" role="region" aria-label="Tyre age calculator">
+
+    <!-- Input card -->
+    <div class="calc-card">
+      <p class="calc-card-title">Enter DOT date code</p>
+      <p style="font-size:var(--text-sm);color:var(--color-text-muted);margin-bottom:1.25rem">
+        Find the last 4 digits after "DOT" on your tyre's sidewall. The first 2 digits are the week, the last 2 are the year (e.g. <strong>2423</strong> = week 24, 2023).
+      </p>
+
+      <div class="dot-input-row">
+        <div class="dot-field-wrap">
+          <label for="dot-code" class="dot-label">4-digit DOT date code</label>
+          <input
+            id="dot-code"
+            type="text"
+            class="input dot-input"
+            placeholder="e.g. 2423"
+            maxlength="4"
+            pattern="\d{4}"
+            inputmode="numeric"
+            autocomplete="off"
+            aria-describedby="dot-hint"
+          />
+          <p id="dot-hint" class="dot-hint">WWYY — week (01–52) then year (00–99)</p>
+        </div>
+        <div class="dot-field-wrap">
+          <label for="dot-ref-date" class="dot-label">Reference date</label>
+          <input
+            id="dot-ref-date"
+            type="date"
+            class="input dot-input"
+            aria-label="Reference date for age calculation"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Result card -->
+    <div class="calc-card" id="dot-result-card" aria-live="polite" aria-atomic="true">
+      <p class="calc-card-title">Tyre age result</p>
+      <div id="dot-placeholder" style="color:var(--color-text-muted);font-size:var(--text-sm)">
+        Enter a valid 4-digit DOT code above to see the result.
+      </div>
+      <div id="dot-result" class="hidden">
+        <div id="dot-badge" class="dot-badge" role="status"></div>
+        <div class="dot-stats-grid">
+          <div class="dot-stat">
+            <p class="dot-stat-value" id="dot-mfg-date">—</p>
+            <p class="dot-stat-label">Manufacture date</p>
+          </div>
+          <div class="dot-stat">
+            <p class="dot-stat-value" id="dot-age-years">—</p>
+            <p class="dot-stat-label">Age (years)</p>
+          </div>
+          <div class="dot-stat">
+            <p class="dot-stat-value" id="dot-age-months">—</p>
+            <p class="dot-stat-label">Age (months)</p>
+          </div>
+        </div>
+        <div id="dot-advice" class="dot-advice"></div>
+        <div class="dot-timeline" aria-label="Tyre safety timeline">
+          <div class="dot-timeline-bar">
+            <div class="dot-tl-seg dot-tl-good"  title="0–3 years: New / Good">0–3 yr</div>
+            <div class="dot-tl-seg dot-tl-ok"    title="3–6 years: Monitor closely">3–6 yr</div>
+            <div class="dot-tl-seg dot-tl-warn"  title="6–10 years: Replace soon">6–10 yr</div>
+            <div class="dot-tl-seg dot-tl-danger" title="10+ years: Replace immediately">10+ yr</div>
+          </div>
+          <div class="dot-tl-marker-wrap">
+            <div class="dot-tl-marker" id="dot-marker" style="left:0%">▲</div>
+          </div>
+        </div>
+      </div>
+      <div id="dot-error" class="hidden dot-error" role="alert"></div>
+    </div>
+
+  </div>
+
+  <section class="mt-8 prose" aria-labelledby="tyre-age-guide">
+    <h2 id="tyre-age-guide">Why Tyre (Tire) Age Matters</h2>
+    <p>Tyres are made from rubber compounds that degrade over time through a process called oxidation. Even a tyre that looks fine on the outside — with plenty of tread depth — can have microscopic cracks forming in the internal structure. These cracks can lead to sudden blowouts, especially at motorway speeds or in hot weather.</p>
+    <h3>Official Guidance</h3>
+    <ul>
+      <li><strong>Under 3 years:</strong> Tyre is new. Normal inspection intervals.</li>
+      <li><strong>3–6 years:</strong> Monitor closely. Annual professional inspection recommended.</li>
+      <li><strong>6–10 years:</strong> Replace at next opportunity even if tread looks good.</li>
+      <li><strong>Over 10 years:</strong> Replace immediately. Unsafe regardless of appearance.</li>
+    </ul>
+    <p>These guidelines apply equally to "tyre" (UK/AU spelling) and "tire" (US spelling) — it's the same rubber, the same chemistry, the same risk.</p>
+  </section>
+</ToolLayout>
+
+<style>
+  .dot-input-row {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  @media (min-width: 560px) {
+    .dot-input-row { flex-direction: row; }
+    .dot-field-wrap { flex: 1; }
+  }
+
+  .dot-label {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 0.375rem;
+  }
+
+  .dot-input {
+    width: 100%;
+    font-size: var(--text-lg);
+    font-weight: 700;
+    font-family: var(--font-mono);
+    letter-spacing: 0.15em;
+  }
+
+  .dot-hint {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    margin-top: 0.375rem;
+  }
+
+  .dot-badge {
+    border-radius: var(--radius-xl);
+    padding: 1rem 1.25rem;
+    font-size: var(--text-lg);
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+
+  .dot-badge-good   { background: #D1FAE5; color: #065F46; border: 1.5px solid #6EE7B7; }
+  .dot-badge-ok     { background: #FEF9C3; color: #78350F; border: 1.5px solid #FDE047; }
+  .dot-badge-warn   { background: #FFEDD5; color: #7C2D12; border: 1.5px solid #FCA5A5; }
+  .dot-badge-danger { background: #FEE2E2; color: #7F1D1D; border: 1.5px solid #F87171; }
+
+  [data-theme="dark"] .dot-badge-good   { background: #064E3B; color: #6EE7B7; border-color: #065F46; }
+  [data-theme="dark"] .dot-badge-ok     { background: #451A03; color: #FDE047; border-color: #78350F; }
+  [data-theme="dark"] .dot-badge-warn   { background: #431407; color: #FCA5A5; border-color: #7C2D12; }
+  [data-theme="dark"] .dot-badge-danger { background: #450A0A; color: #F87171; border-color: #7F1D1D; }
+
+  .dot-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .dot-stat {
+    background: var(--color-bg-secondary);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: 0.875rem 0.75rem;
+    text-align: center;
+  }
+
+  .dot-stat-value {
+    font-size: var(--text-xl);
+    font-weight: 800;
+    color: var(--color-text);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  .dot-stat-label {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 0.25rem;
+  }
+
+  .dot-advice {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    margin-bottom: 1.25rem;
+    line-height: 1.6;
+  }
+
+  .dot-timeline { margin-top: 0.5rem; }
+
+  .dot-timeline-bar {
+    display: flex;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    height: 2rem;
+  }
+
+  .dot-tl-seg {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: white;
+  }
+
+  .dot-tl-good   { background: #10B981; }
+  .dot-tl-ok     { background: #F59E0B; }
+  .dot-tl-warn   { background: #F97316; }
+  .dot-tl-danger { background: #EF4444; }
+
+  .dot-tl-marker-wrap { position: relative; height: 1.25rem; }
+
+  .dot-tl-marker {
+    position: absolute;
+    transform: translateX(-50%);
+    font-size: 0.85rem;
+    color: var(--color-text);
+    transition: left 0.4s ease;
+    top: 0;
+  }
+
+  .dot-error {
+    background: #FEE2E2;
+    border: 1.5px solid #F87171;
+    color: #7F1D1D;
+    border-radius: var(--radius-lg);
+    padding: 0.75rem 1rem;
+    font-size: var(--text-sm);
+  }
+
+  [data-theme="dark"] .dot-error { background: #450A0A; color: #F87171; border-color: #7F1D1D; }
+</style>
+
+<script>
+  const input   = document.getElementById('dot-code') as HTMLInputElement;
+  const refDate = document.getElementById('dot-ref-date') as HTMLInputElement;
+
+  // Pre-fill today
+  const today = new Date();
+  refDate.value = today.toISOString().slice(0, 10);
+
+  function weekToDate(week: number, year2: number): Date {
+    const fullYear = year2 < 70 ? 2000 + year2 : 1900 + year2;
+    // ISO week 1 = first week with Thursday of the year
+    const jan4 = new Date(fullYear, 0, 4);
+    const startOfWeek1 = new Date(jan4);
+    startOfWeek1.setDate(jan4.getDate() - ((jan4.getDay() + 6) % 7));
+    const d = new Date(startOfWeek1);
+    d.setDate(d.getDate() + (week - 1) * 7);
+    return d;
+  }
+
+  function formatDate(d: Date): string {
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  function calculate() {
+    const code = input.value.trim();
+    const ref  = refDate.value ? new Date(refDate.value) : new Date();
+
+    const resultEl      = document.getElementById('dot-result')!;
+    const placeholderEl = document.getElementById('dot-placeholder')!;
+    const errorEl       = document.getElementById('dot-error')!;
+
+    const show = (el: HTMLElement) => el.classList.remove('hidden');
+    const hide = (el: HTMLElement) => el.classList.add('hidden');
+
+    if (code.length < 4) {
+      show(placeholderEl); hide(resultEl); hide(errorEl);
+      return;
+    }
+
+    if (!/^\d{4}$/.test(code)) {
+      hide(placeholderEl); hide(resultEl); show(errorEl);
+      errorEl.textContent = 'Please enter exactly 4 digits (e.g. 2423).';
+      return;
+    }
+
+    const week = parseInt(code.slice(0, 2), 10);
+    const year = parseInt(code.slice(2, 4), 10);
+
+    if (week < 1 || week > 53) {
+      hide(placeholderEl); hide(resultEl); show(errorEl);
+      errorEl.textContent = `Week "${week}" is not valid. Weeks must be between 01 and 53.`;
+      return;
+    }
+
+    const mfgDate = weekToDate(week, year);
+    const diffMs  = ref.getTime() - mfgDate.getTime();
+
+    if (diffMs < 0) {
+      hide(placeholderEl); hide(resultEl); show(errorEl);
+      errorEl.textContent = 'Manufacture date is in the future. Check your DOT code.';
+      return;
+    }
+
+    const totalMonths = (ref.getFullYear() - mfgDate.getFullYear()) * 12
+      + (ref.getMonth() - mfgDate.getMonth());
+    const ageYears  = Math.floor(totalMonths / 12);
+    const ageMonths = totalMonths % 12;
+    const totalMonthsFull = totalMonths;
+
+    hide(placeholderEl); hide(errorEl); show(resultEl);
+
+    (document.getElementById('dot-mfg-date') as HTMLElement).textContent  = formatDate(mfgDate);
+    (document.getElementById('dot-age-years') as HTMLElement).textContent = `${ageYears} yr`;
+    (document.getElementById('dot-age-months') as HTMLElement).textContent = `${ageYears * 12 + ageMonths} mo`;
+
+    const badge   = document.getElementById('dot-badge')!;
+    const advice  = document.getElementById('dot-advice')!;
+    const marker  = document.getElementById('dot-marker')!;
+
+    badge.className = 'dot-badge';
+
+    const maxDisplay = 12 * 12; // 12 years maps to 100%
+    const pct = Math.min((totalMonthsFull / maxDisplay) * 100, 98);
+    marker.style.left = `${pct}%`;
+
+    if (ageYears < 3) {
+      badge.classList.add('dot-badge-good');
+      badge.textContent = `✅ Good — ${ageYears} year${ageYears !== 1 ? 's' : ''} old`;
+      advice.textContent = 'Your tyre is relatively new. Follow standard inspection intervals and check tread depth regularly.';
+    } else if (ageYears < 6) {
+      badge.classList.add('dot-badge-ok');
+      badge.textContent = `⚠️ Monitor — ${ageYears} year${ageYears !== 1 ? 's' : ''} old`;
+      advice.textContent = 'This tyre is in the monitoring zone. Have it professionally inspected annually and check for sidewall cracking.';
+    } else if (ageYears < 10) {
+      badge.classList.add('dot-badge-warn');
+      badge.textContent = `🔶 Replace soon — ${ageYears} year${ageYears !== 1 ? 's' : ''} old`;
+      advice.textContent = 'Most manufacturers recommend replacing tyres over 6 years old. Plan replacement soon, especially before long trips or summer heat.';
+    } else {
+      badge.classList.add('dot-badge-danger');
+      badge.textContent = `❌ Replace immediately — ${ageYears} year${ageYears !== 1 ? 's' : ''} old`;
+      advice.textContent = 'This tyre is over 10 years old and should be replaced immediately regardless of tread depth. Aged rubber can fail without warning.';
+    }
+  }
+
+  input.addEventListener('input', calculate);
+  refDate.addEventListener('change', calculate);
+  calculate();
+</script>

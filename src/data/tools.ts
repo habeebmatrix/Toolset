@@ -1,6 +1,7 @@
 export type CategorySlug =
   | 'math'
   | 'finance'
+  | 'automotive'
   | 'health'
   | 'date-time'
   | 'text'
@@ -73,6 +74,15 @@ export const categories: Category[] = [
       'Text utilities for writers, developers, and students. Count words, convert case, generate placeholder text, and analyse readability.',
     icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>`,
     accentColor: '#7C3AED',
+  },
+  {
+    slug: 'automotive',
+    name: 'Automotive',
+    description: 'Tyre age, fuel cost, MPG, depreciation, and road trip tools.',
+    longDescription:
+      'Vehicle calculators for every driver. Check tyre safety age, calculate fuel costs, convert pressure units, estimate car depreciation, and plan road trips.',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="2.5"/><circle cx="18.5" cy="17.5" r="2.5"/><path d="M3 17V9l2-4h10l3 4h2a1 1 0 0 1 1 1v7"/><path d="M5 9h13"/></svg>`,
+    accentColor: '#B45309',
   },
   {
     slug: 'converters',
@@ -156,6 +166,67 @@ export const tools: Tool[] = [
     description: 'Calculate how much to tip and split the total between any number of people.',
     category: 'finance',
     tags: ['tip calculator', 'split bill', 'gratuity'],
+    featured: false,
+    isReady: true,
+  },
+  // Automotive
+  {
+    slug: 'tyre-age-calculator',
+    name: 'Tyre Age Calculator',
+    shortDescription: 'Check how old your tyres are from the DOT code.',
+    description: 'Find out how old your tyres are by entering the 4-digit DOT date code on the sidewall. Get a safety assessment and replacement recommendation based on manufacturer guidelines.',
+    category: 'automotive',
+    tags: ['tyre age calculator', 'tire age calculator', 'DOT code', 'tyre manufacture date', 'how old are my tyres', 'tire age'],
+    featured: true,
+    isReady: true,
+  },
+  {
+    slug: 'fuel-cost-calculator',
+    name: 'Fuel Cost Calculator',
+    shortDescription: 'Calculate the fuel cost of any journey.',
+    description: 'Work out how much fuel a trip will cost based on distance, fuel efficiency, and current fuel price. Supports both imperial (miles/MPG) and metric (km/L per 100km) units.',
+    category: 'automotive',
+    tags: ['fuel cost calculator', 'petrol cost calculator', 'gas cost calculator', 'trip fuel cost'],
+    featured: false,
+    isReady: true,
+  },
+  {
+    slug: 'mpg-calculator',
+    name: 'MPG & Fuel Efficiency Calculator',
+    shortDescription: 'Calculate MPG or convert between fuel efficiency units.',
+    description: 'Calculate miles per gallon from distance and fuel used, or instantly convert between MPG, L/100km, and km/L to compare fuel efficiency across vehicles.',
+    category: 'automotive',
+    tags: ['MPG calculator', 'miles per gallon', 'fuel efficiency', 'L/100km', 'km per litre'],
+    featured: false,
+    isReady: true,
+  },
+  {
+    slug: 'tyre-pressure-converter',
+    name: 'Tyre Pressure Converter',
+    shortDescription: 'Convert tyre pressure between PSI, bar, and kPa.',
+    description: 'Instantly convert tyre pressure between PSI, bar, and kPa. Enter a value in any unit to see the equivalent in all others.',
+    category: 'automotive',
+    tags: ['tyre pressure converter', 'PSI to bar', 'bar to PSI', 'kPa to PSI', 'tire pressure converter'],
+    featured: false,
+    isReady: true,
+  },
+  {
+    slug: 'car-depreciation-calculator',
+    name: 'Car Depreciation Calculator',
+    shortDescription: 'Estimate how much your car has lost in value.',
+    description: 'Estimate your car\'s current value and total depreciation based on purchase price, age, and annual depreciation rate. Includes a year-by-year value breakdown.',
+    category: 'automotive',
+    tags: ['car depreciation calculator', 'vehicle depreciation', 'car value calculator', 'how much is my car worth'],
+    featured: false,
+    isReady: true,
+  },
+  {
+    slug: 'road-trip-cost-calculator',
+    name: 'Road Trip Cost Calculator',
+    shortDescription: 'Plan the total cost of your road trip.',
+    description: 'Calculate the full cost of a road trip including fuel, accommodation, and food. Split total costs per person for easy group travel budgeting.',
+    category: 'automotive',
+    tags: ['road trip cost calculator', 'road trip planner', 'trip cost calculator', 'driving cost calculator'],
     featured: false,
     isReady: true,
   },

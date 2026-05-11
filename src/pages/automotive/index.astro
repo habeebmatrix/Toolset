@@ -1,0 +1,58 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolCard from '../../components/ToolCard.astro';
+import { getCategory, getToolsByCategory } from '../../data/tools';
+
+const category = getCategory('automotive')!;
+const tools = getToolsByCategory('automotive');
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Automotive Calculators — Toolset',
+    description: category.longDescription,
+    url: 'https://toolset.dev/automotive/',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://toolset.dev/' },
+      { '@type': 'ListItem', position: 2, name: 'Automotive', item: 'https://toolset.dev/automotive/' },
+    ],
+  },
+];
+---
+
+<BaseLayout
+  title="Automotive Calculators — Free Online Vehicle Tools"
+  description={`${category.longDescription} All free, no signup required.`}
+  jsonLd={jsonLd}
+>
+  <main id="main-content">
+    <section class="category-hero" aria-labelledby="cat-heading">
+      <div class="container">
+        <nav class="breadcrumb" aria-label="Breadcrumb" style="padding-top:0;padding-bottom:1.5rem">
+          <a href="/">Home</a>
+          <svg class="breadcrumb-sep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+          <span aria-current="page">{category.name}</span>
+        </nav>
+        <div class="category-hero-icon" aria-hidden="true" set:html={category.icon} style={`background:${category.accentColor}`} />
+        <h1 id="cat-heading">Automotive Calculators</h1>
+        <p>{category.longDescription}</p>
+      </div>
+    </section>
+
+    <section class="page-section" aria-labelledby="tools-heading">
+      <div class="container">
+        <h2 id="tools-heading" class="sr-only">Automotive Tools</h2>
+        <div class="tools-grid">
+          {tools.map((tool) => <ToolCard tool={tool} />)}
+        </div>
+      </div>
+    </section>
+  </main>
+</BaseLayout>

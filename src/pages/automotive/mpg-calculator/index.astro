@@ -1,0 +1,271 @@
+---
+import ToolLayout from '../../../layouts/ToolLayout.astro';
+import { tools } from '../../../data/tools';
+
+const tool = tools.find((t) => t.slug === 'mpg-calculator')!;
+
+const faqs = [
+  {
+    q: 'How do I calculate MPG?',
+    a: 'Divide the number of miles driven by the gallons of fuel used. For example, if you drove 300 miles on 8.5 gallons, your MPG is 300 ÷ 8.5 = 35.3 MPG.',
+  },
+  {
+    q: 'What is the difference between UK MPG and US MPG?',
+    a: 'A UK (imperial) gallon is 4.546 litres, while a US gallon is 3.785 litres. This means UK MPG figures are about 20% higher than US MPG for the same vehicle. For example, 40 UK MPG ≈ 33.3 US MPG.',
+  },
+  {
+    q: 'How do I convert MPG to L/100km?',
+    a: 'For UK MPG: L/100km = 282.48 ÷ MPG. For US MPG: L/100km = 235.21 ÷ MPG. This tool handles both conversions automatically.',
+  },
+  {
+    q: 'What is km/L and how does it relate to L/100km?',
+    a: 'km/L is fuel efficiency expressed as distance per unit of fuel (higher is better, like MPG). L/100km is how many litres to travel 100 km (lower is better). To convert: km/L = 100 ÷ L/100km.',
+  },
+];
+---
+
+<ToolLayout tool={tool} faqs={faqs}>
+  <div class="calc-cards" role="region" aria-label="MPG calculator">
+
+    <!-- Card 1: Calculate MPG -->
+    <div class="calc-card">
+      <p class="calc-card-title">Calculate MPG from a fill-up</p>
+      <div class="mpg-sentence">
+        <span>I drove</span>
+        <div class="mpg-field-wrap">
+          <input id="mpg-miles" type="number" class="input input-inline" min="0" step="1" placeholder="300" aria-label="Miles driven" />
+          <span class="mpg-inline-unit">miles</span>
+        </div>
+        <span>and used</span>
+        <div class="mpg-field-wrap">
+          <input id="mpg-gallons" type="number" class="input input-inline" min="0.01" step="0.01" placeholder="8.5" aria-label="Gallons used" />
+          <span class="mpg-inline-unit">gallons</span>
+        </div>
+      </div>
+      <div id="mpg-result1" class="mpg-result hidden" aria-live="polite" aria-atomic="true">
+        <div class="mpg-big-result">
+          <span class="mpg-big-num" id="mpg-mpg-uk">—</span>
+          <span class="mpg-big-label">MPG (UK)</span>
+        </div>
+        <div class="mpg-conv-row">
+          <span class="mpg-conv-item"><strong id="mpg-mpg-us">—</strong> MPG (US)</span>
+          <span class="mpg-conv-sep">·</span>
+          <span class="mpg-conv-item"><strong id="mpg-l100-1">—</strong> L/100km</span>
+          <span class="mpg-conv-sep">·</span>
+          <span class="mpg-conv-item"><strong id="mpg-kml-1">—</strong> km/L</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Convert between units -->
+    <div class="calc-card">
+      <p class="calc-card-title">Convert fuel efficiency units</p>
+      <p style="font-size:var(--text-sm);color:var(--color-text-muted);margin-bottom:1rem">Enter any one value — the others update instantly.</p>
+      <div class="mpg-conv-grid">
+        <div class="mpg-conv-field">
+          <label for="cv-mpg-uk" class="mpg-conv-label">MPG (UK imperial)</label>
+          <input id="cv-mpg-uk" type="number" class="input" min="0" step="0.1" placeholder="40" />
+        </div>
+        <div class="mpg-conv-field">
+          <label for="cv-mpg-us" class="mpg-conv-label">MPG (US)</label>
+          <input id="cv-mpg-us" type="number" class="input" min="0" step="0.1" placeholder="33.3" />
+        </div>
+        <div class="mpg-conv-field">
+          <label for="cv-l100" class="mpg-conv-label">L/100km</label>
+          <input id="cv-l100" type="number" class="input" min="0" step="0.1" placeholder="7.1" />
+        </div>
+        <div class="mpg-conv-field">
+          <label for="cv-kml" class="mpg-conv-label">km/L</label>
+          <input id="cv-kml" type="number" class="input" min="0" step="0.1" placeholder="14.1" />
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="mt-8 prose" aria-labelledby="mpg-guide">
+    <h2 id="mpg-guide">MPG vs L/100km vs km/L — Which Should You Use?</h2>
+    <p>All three metrics describe the same thing — fuel economy — just in different directions:</p>
+    <ul>
+      <li><strong>MPG (miles per gallon)</strong> — used in the UK and USA. Higher is better.</li>
+      <li><strong>L/100km (litres per 100 kilometres)</strong> — used across Europe, Australia, and Canada. Lower is better.</li>
+      <li><strong>km/L (kilometres per litre)</strong> — used in Japan, India, and parts of Asia. Higher is better.</li>
+    </ul>
+    <p>When comparing vehicles across markets, always verify which gallon definition (UK vs US) is being used — a 40 MPG UK car is only ~33.3 MPG on the US scale.</p>
+  </section>
+</ToolLayout>
+
+<style>
+  .mpg-sentence {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.625rem;
+    font-size: var(--text-base);
+    color: var(--color-text);
+    margin-bottom: 1.25rem;
+  }
+
+  .mpg-field-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+
+  .input-inline {
+    width: 7rem;
+    min-width: 0;
+    text-align: center;
+    font-weight: 700;
+  }
+
+  .mpg-inline-unit {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    font-weight: 500;
+  }
+
+  .mpg-result {
+    background: var(--color-bg-secondary);
+    border: 1.5px solid var(--color-primary-muted);
+    border-radius: var(--radius-xl);
+    padding: 1.25rem;
+  }
+
+  .mpg-big-result {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .mpg-big-num {
+    font-size: var(--text-4xl);
+    font-weight: 900;
+    color: var(--color-primary);
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  .mpg-big-label {
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--color-text-muted);
+  }
+
+  .mpg-conv-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem 0.875rem;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  .mpg-conv-sep { color: var(--color-border); }
+
+  .mpg-conv-item strong { color: var(--color-text); }
+
+  .mpg-conv-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media (min-width: 600px) {
+    .mpg-conv-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  .mpg-conv-label {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 0.375rem;
+  }
+</style>
+
+<script>
+  // Constants
+  const UK_GAL_L = 4.54609;
+  const US_GAL_L = 3.78541;
+  const KM_PER_MILE = 1.60934;
+
+  // --- Card 1: miles + gallons → MPG ---
+  const milesEl   = document.getElementById('mpg-miles')   as HTMLInputElement;
+  const gallonsEl = document.getElementById('mpg-gallons') as HTMLInputElement;
+  const result1   = document.getElementById('mpg-result1')!;
+
+  function fmt(n: number, d = 1): string {
+    return n.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
+  }
+
+  function calcMpg() {
+    const miles   = parseFloat(milesEl.value);
+    const gallons = parseFloat(gallonsEl.value);
+    if (!miles || !gallons || miles <= 0 || gallons <= 0) {
+      result1.classList.add('hidden'); return;
+    }
+    const mpgUK = miles / gallons;
+    const mpgUS = mpgUK * (UK_GAL_L / US_GAL_L);
+    const km    = miles * KM_PER_MILE;
+    const litres = gallons * UK_GAL_L;
+    const l100  = (litres / km) * 100;
+    const kml   = km / litres;
+
+    result1.classList.remove('hidden');
+    (document.getElementById('mpg-mpg-uk') as HTMLElement).textContent = fmt(mpgUK);
+    (document.getElementById('mpg-mpg-us') as HTMLElement).textContent = fmt(mpgUS);
+    (document.getElementById('mpg-l100-1') as HTMLElement).textContent = fmt(l100);
+    (document.getElementById('mpg-kml-1')  as HTMLElement).textContent = fmt(kml);
+  }
+
+  milesEl.addEventListener('input', calcMpg);
+  gallonsEl.addEventListener('input', calcMpg);
+
+  // --- Card 2: live unit converter (any field drives the others) ---
+  const cvMpgUk = document.getElementById('cv-mpg-uk') as HTMLInputElement;
+  const cvMpgUs = document.getElementById('cv-mpg-us') as HTMLInputElement;
+  const cvL100  = document.getElementById('cv-l100')   as HTMLInputElement;
+  const cvKml   = document.getElementById('cv-kml')    as HTMLInputElement;
+
+  let updating = false;
+
+  function setOthers(source: string, val: number) {
+    if (updating) return;
+    updating = true;
+
+    let mpgUK: number;
+    switch (source) {
+      case 'uk':  mpgUK = val; break;
+      case 'us':  mpgUK = val * (US_GAL_L / UK_GAL_L); break;
+      case 'l100': mpgUK = (UK_GAL_L * 100) / (val * KM_PER_MILE); break;
+      case 'kml': mpgUK = (val * UK_GAL_L) / (KM_PER_MILE * UK_GAL_L) * UK_GAL_L / KM_PER_MILE; break;
+      default: updating = false; return;
+    }
+
+    // Re-derive all from mpgUK
+    if (source === 'kml') {
+      // km/L → L/100km → mpgUK
+      const kml = val;
+      const l100 = 100 / kml;
+      mpgUK = (UK_GAL_L * 100) / (l100 * KM_PER_MILE);
+    }
+
+    const mpgUS = mpgUK * (US_GAL_L / UK_GAL_L);
+    const kmPerLitreUK = (mpgUK * KM_PER_MILE) / UK_GAL_L;
+    const l100  = 100 / kmPerLitreUK;
+    const kml   = kmPerLitreUK;
+
+    if (source !== 'uk') cvMpgUk.value = mpgUK > 0 ? fmt(mpgUK) : '';
+    if (source !== 'us') cvMpgUs.value = mpgUS > 0 ? fmt(mpgUS) : '';
+    if (source !== 'l100') cvL100.value = l100 > 0 ? fmt(l100)  : '';
+    if (source !== 'kml')  cvKml.value  = kml  > 0 ? fmt(kml)   : '';
+
+    updating = false;
+  }
+
+  cvMpgUk.addEventListener('input', () => { const v = parseFloat(cvMpgUk.value); if (!isNaN(v) && v > 0) setOthers('uk',   v); });
+  cvMpgUs.addEventListener('input', () => { const v = parseFloat(cvMpgUs.value); if (!isNaN(v) && v > 0) setOthers('us',   v); });
+  cvL100.addEventListener('input',  () => { const v = parseFloat(cvL100.value);  if (!isNaN(v) && v > 0) setOthers('l100', v); });
+  cvKml.addEventListener('input',   () => { const v = parseFloat(cvKml.value);   if (!isNaN(v) && v > 0) setOthers('kml',  v); });
+</script>

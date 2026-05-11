@@ -1,0 +1,383 @@
+---
+import ToolLayout from '../../../layouts/ToolLayout.astro';
+import { tools } from '../../../data/tools';
+
+const tool = tools.find((t) => t.slug === 'road-trip-cost-calculator')!;
+
+const faqs = [
+  {
+    q: 'What costs does this calculator include?',
+    a: 'The calculator covers fuel cost (required), plus optional extras: tolls, hotel accommodation, and daily food/meal budget. Per-person cost is calculated by splitting the total across the number of travellers.',
+  },
+  {
+    q: 'How do I estimate my fuel efficiency for a road trip?',
+    a: 'For road trips at motorway speeds, your fuel consumption is typically slightly better than city driving but slightly worse than your official rating due to sustained high-speed cruising. A good rule is to use your real-world fuel economy figure rather than the manufacturer\'s claimed figure.',
+  },
+  {
+    q: 'Should I include return journey costs?',
+    a: 'This calculator is for a one-way trip by default. To include the return journey, double your distance (or nights/tolls if those differ on the return).',
+  },
+  {
+    q: 'Why is per-person cost so useful?',
+    a: 'Sharing a car trip with passengers makes it dramatically cheaper per person. Four people sharing a 500-mile drive can each pay as little as 25% of the solo cost, often making road trips cheaper than flying or taking a train.',
+  },
+];
+---
+
+<ToolLayout tool={tool} faqs={faqs}>
+  <div class="calc-cards" role="region" aria-label="Road trip cost calculator">
+
+    <!-- Unit toggle -->
+    <div class="calc-card">
+      <p class="calc-card-title">Units</p>
+      <div class="rt-unit-toggle" role="group" aria-label="Unit system">
+        <button class="rt-unit-btn active" id="rt-btn-imperial" data-unit="imperial">Imperial (miles / MPG)</button>
+        <button class="rt-unit-btn" id="rt-btn-metric" data-unit="metric">Metric (km / L/100km)</button>
+      </div>
+    </div>
+
+    <!-- Journey details -->
+    <div class="calc-card">
+      <p class="calc-card-title">Journey details</p>
+      <div class="rt-fields">
+        <div class="rt-row">
+          <div class="rt-field" id="rt-dist-field-imp">
+            <label for="rt-dist-mi" class="rt-label">Trip distance</label>
+            <div class="rt-iw">
+              <input id="rt-dist-mi" type="number" class="input" min="0" step="1" placeholder="500" />
+              <span class="rt-unit">miles</span>
+            </div>
+          </div>
+          <div class="rt-field hidden" id="rt-dist-field-met">
+            <label for="rt-dist-km" class="rt-label">Trip distance</label>
+            <div class="rt-iw">
+              <input id="rt-dist-km" type="number" class="input" min="0" step="1" placeholder="800" />
+              <span class="rt-unit">km</span>
+            </div>
+          </div>
+
+          <div class="rt-field" id="rt-eff-field-imp">
+            <label for="rt-mpg" class="rt-label">Fuel efficiency</label>
+            <div class="rt-iw">
+              <input id="rt-mpg" type="number" class="input" min="0.1" step="0.1" placeholder="35" />
+              <span class="rt-unit">MPG</span>
+            </div>
+          </div>
+          <div class="rt-field hidden" id="rt-eff-field-met">
+            <label for="rt-l100" class="rt-label">Fuel efficiency</label>
+            <div class="rt-iw">
+              <input id="rt-l100" type="number" class="input" min="0.1" step="0.1" placeholder="8" />
+              <span class="rt-unit">L/100km</span>
+            </div>
+          </div>
+
+          <div class="rt-field" id="rt-price-field-imp">
+            <label for="rt-price-gal" class="rt-label">Fuel price</label>
+            <div class="rt-iw">
+              <span class="rt-prefix">$</span>
+              <input id="rt-price-gal" type="number" class="input" min="0" step="0.01" placeholder="3.50" />
+              <span class="rt-unit">/ gal</span>
+            </div>
+          </div>
+          <div class="rt-field hidden" id="rt-price-field-met">
+            <label for="rt-price-l" class="rt-label">Fuel price</label>
+            <div class="rt-iw">
+              <input id="rt-price-l" type="number" class="input" min="0" step="0.01" placeholder="1.60" />
+              <span class="rt-unit">/ litre</span>
+            </div>
+          </div>
+
+          <div class="rt-field">
+            <label for="rt-people" class="rt-label">Number of people</label>
+            <input id="rt-people" type="number" class="input" min="1" max="20" step="1" value="2" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Optional extras -->
+    <div class="calc-card">
+      <p class="calc-card-title">Optional extras</p>
+      <div class="rt-row">
+        <div class="rt-field">
+          <label for="rt-tolls" class="rt-label">Tolls / road charges</label>
+          <div class="rt-iw">
+            <span class="rt-prefix">$</span>
+            <input id="rt-tolls" type="number" class="input" min="0" step="0.50" placeholder="0" />
+          </div>
+        </div>
+        <div class="rt-field">
+          <label for="rt-nights" class="rt-label">Hotel nights</label>
+          <input id="rt-nights" type="number" class="input" min="0" step="1" placeholder="0" />
+        </div>
+        <div class="rt-field">
+          <label for="rt-hotel-rate" class="rt-label">Hotel cost / night</label>
+          <div class="rt-iw">
+            <span class="rt-prefix">$</span>
+            <input id="rt-hotel-rate" type="number" class="input" min="0" step="1" placeholder="80" />
+          </div>
+        </div>
+        <div class="rt-field">
+          <label for="rt-food" class="rt-label">Food budget / person / day</label>
+          <div class="rt-iw">
+            <span class="rt-prefix">$</span>
+            <input id="rt-food" type="number" class="input" min="0" step="1" placeholder="40" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="calc-card" aria-live="polite" aria-atomic="true">
+      <p class="calc-card-title">Trip cost breakdown</p>
+      <div id="rt-placeholder" style="color:var(--color-text-muted);font-size:var(--text-sm)">Enter journey details above to see cost estimates.</div>
+      <div id="rt-result" class="hidden">
+        <div class="rt-stats-grid">
+          <div class="rt-stat rt-stat--primary">
+            <p class="rt-stat-value" id="rt-total">—</p>
+            <p class="rt-stat-label">Total trip cost</p>
+          </div>
+          <div class="rt-stat rt-stat--primary">
+            <p class="rt-stat-value" id="rt-per-person">—</p>
+            <p class="rt-stat-label">Per person</p>
+          </div>
+        </div>
+
+        <div class="rt-breakdown" id="rt-breakdown"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="mt-8 prose" aria-labelledby="rt-guide">
+    <h2 id="rt-guide">Planning Your Road Trip Budget</h2>
+    <p>Fuel is often only 30–50% of the total road trip cost. Factor in accommodation (especially for multi-day trips), food, parking, tolls, and any entrance fees to attractions.</p>
+    <ul>
+      <li><strong>Book accommodation in advance</strong> to avoid inflated last-minute prices.</li>
+      <li><strong>Pack snacks and a cooler</strong> — motorway service stations charge a premium.</li>
+      <li><strong>Download offline maps</strong> for areas with poor signal.</li>
+      <li><strong>Check tyre pressure</strong> before departure to improve fuel economy and safety.</li>
+      <li><strong>Travel with friends</strong> — splitting costs 3 or 4 ways transforms the economics.</li>
+    </ul>
+  </section>
+</ToolLayout>
+
+<style>
+  .rt-unit-toggle {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .rt-unit-btn {
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-lg);
+    border: 1.5px solid var(--color-border);
+    background: var(--color-bg-secondary);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+
+  .rt-unit-btn.active {
+    border-color: var(--color-primary);
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+  }
+
+  .rt-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media (max-width: 480px) {
+    .rt-row { grid-template-columns: 1fr; }
+  }
+
+  .rt-label {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 0.375rem;
+  }
+
+  .rt-iw {
+    display: flex;
+    align-items: center;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--color-bg-secondary);
+  }
+
+  .rt-iw:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 15%, transparent);
+  }
+
+  .rt-iw .input { border: none !important; background: transparent !important; flex: 1; min-width: 0; border-radius: 0 !important; }
+  .rt-iw .input:focus { outline: none !important; box-shadow: none !important; }
+
+  .rt-prefix, .rt-unit {
+    padding: 0 0.5rem;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    background: var(--color-bg-card);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+  }
+
+  .rt-prefix { border-right: 1px solid var(--color-border); }
+  .rt-unit   { border-left:  1px solid var(--color-border); }
+
+  .rt-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .rt-stat {
+    background: var(--color-bg-secondary);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: 1.25rem 1rem;
+    text-align: center;
+  }
+
+  .rt-stat--primary {
+    border-color: var(--color-primary-muted);
+    background: var(--color-primary-light);
+  }
+
+  .rt-stat-value {
+    font-size: var(--text-3xl);
+    font-weight: 900;
+    color: var(--color-text);
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  .rt-stat--primary .rt-stat-value { color: var(--color-primary); }
+
+  .rt-stat-label {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 0.5rem;
+  }
+
+  .rt-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+  }
+
+  .rt-breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+    font-size: var(--text-sm);
+  }
+
+  .rt-breakdown-row:last-child { border-bottom: none; }
+
+  .rt-breakdown-label { color: var(--color-text-muted); font-weight: 500; }
+  .rt-breakdown-value { font-weight: 700; color: var(--color-text); }
+</style>
+
+<script>
+  type Unit = 'imperial' | 'metric';
+  let unit: Unit = 'imperial';
+
+  function toggleUnit(u: Unit) {
+    unit = u;
+    const ids = ['dist-field-imp','dist-field-met','eff-field-imp','eff-field-met','price-field-imp','price-field-met'];
+    ids.forEach((id) => {
+      const el = document.getElementById(`rt-${id}`)!;
+      const isImp = id.endsWith('-imp');
+      el.classList.toggle('hidden', u === 'imperial' ? !isImp : isImp);
+    });
+    document.getElementById('rt-btn-imperial')!.classList.toggle('active', u === 'imperial');
+    document.getElementById('rt-btn-metric')!.classList.toggle('active',   u === 'metric');
+    calculate();
+  }
+
+  document.getElementById('rt-btn-imperial')!.addEventListener('click', () => toggleUnit('imperial'));
+  document.getElementById('rt-btn-metric')!.addEventListener('click',   () => toggleUnit('metric'));
+
+  function v(id: string): number { return parseFloat((document.getElementById(id) as HTMLInputElement).value) || 0; }
+
+  function fmtCost(n: number): string {
+    return '$' + n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function calculate() {
+    const people    = Math.max(1, Math.round(v('rt-people')));
+    const tolls     = v('rt-tolls');
+    const nights    = v('rt-nights');
+    const hotelRate = v('rt-hotel-rate');
+    const food      = v('rt-food');
+
+    let fuelCost = 0;
+
+    if (unit === 'imperial') {
+      const dist  = v('rt-dist-mi');
+      const mpg   = v('rt-mpg');
+      const price = v('rt-price-gal');
+      if (dist > 0 && mpg > 0 && price > 0) fuelCost = (dist / mpg) * price;
+    } else {
+      const dist  = v('rt-dist-km');
+      const l100  = v('rt-l100');
+      const price = v('rt-price-l');
+      if (dist > 0 && l100 > 0 && price > 0) fuelCost = (dist * l100 / 100) * price;
+    }
+
+    const placeholder = document.getElementById('rt-placeholder')!;
+    const result      = document.getElementById('rt-result')!;
+
+    if (fuelCost === 0) {
+      placeholder.classList.remove('hidden'); result.classList.add('hidden'); return;
+    }
+
+    const hotelCost = nights * hotelRate;
+    const foodCost  = nights > 0 ? food * people * nights : 0;
+    const total     = fuelCost + tolls + hotelCost + foodCost;
+    const perPerson = total / people;
+
+    placeholder.classList.add('hidden'); result.classList.remove('hidden');
+    (document.getElementById('rt-total')      as HTMLElement).textContent = fmtCost(total);
+    (document.getElementById('rt-per-person') as HTMLElement).textContent = fmtCost(perPerson);
+
+    const breakdownEl = document.getElementById('rt-breakdown')!;
+    const rows: {label: string; value: number}[] = [
+      { label: 'Fuel', value: fuelCost },
+    ];
+    if (tolls > 0)     rows.push({ label: 'Tolls / road charges', value: tolls });
+    if (hotelCost > 0) rows.push({ label: `Hotel (${nights} night${nights !== 1 ? 's' : ''})`, value: hotelCost });
+    if (foodCost > 0)  rows.push({ label: `Food (${people} × ${nights} day${nights !== 1 ? 's' : ''})`, value: foodCost });
+
+    breakdownEl.innerHTML = rows.map(({ label, value }) => `
+      <div class="rt-breakdown-row">
+        <span class="rt-breakdown-label">${label}</span>
+        <span class="rt-breakdown-value">${fmtCost(value)}</span>
+      </div>
+    `).join('');
+  }
+
+  document.querySelectorAll('.calc-card input').forEach((el) => el.addEventListener('input', calculate));
+  calculate();
+</script>

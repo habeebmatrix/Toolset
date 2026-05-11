@@ -1,0 +1,335 @@
+---
+import ToolLayout from '../../../layouts/ToolLayout.astro';
+import { tools } from '../../../data/tools';
+
+const tool = tools.find((t) => t.slug === 'fuel-cost-calculator')!;
+
+const faqs = [
+  {
+    q: 'How is fuel cost calculated?',
+    a: 'Fuel cost = (distance ÷ fuel efficiency) × fuel price. For MPG: cost = (miles ÷ MPG) × price per gallon. For L/100km: cost = (km × L/100km ÷ 100) × price per litre.',
+  },
+  {
+    q: 'What is a good MPG for a car?',
+    a: 'A fuel-efficient petrol car typically achieves 35–45 MPG. Hybrids achieve 50–60 MPG, diesel cars 40–55 MPG, and older or larger vehicles may only reach 20–30 MPG.',
+  },
+  {
+    q: 'What is a good L/100km rating?',
+    a: 'Lower is better for L/100km. Efficient petrol cars achieve 5–7 L/100km. Hybrids can reach 3–5 L/100km. SUVs and older vehicles may use 8–14 L/100km.',
+  },
+  {
+    q: 'How do I convert MPG to L/100km?',
+    a: 'Use the formula: L/100km = 282.48 ÷ MPG (for UK imperial gallons) or 235.21 ÷ MPG (for US gallons). Our MPG Calculator tool handles this conversion automatically.',
+  },
+];
+---
+
+<ToolLayout tool={tool} faqs={faqs}>
+  <div class="calc-cards" role="region" aria-label="Fuel cost calculator">
+
+    <!-- Unit toggle -->
+    <div class="calc-card">
+      <p class="calc-card-title">Units</p>
+      <div class="unit-toggle" role="group" aria-label="Unit system">
+        <button class="unit-btn active" id="btn-imperial" data-unit="imperial">Imperial (MPG / gallons)</button>
+        <button class="unit-btn" id="btn-metric" data-unit="metric">Metric (L/100km / litres)</button>
+      </div>
+    </div>
+
+    <!-- Inputs -->
+    <div class="calc-card">
+      <p class="calc-card-title">Journey details</p>
+
+      <div class="fc-row" id="fc-row-imperial">
+        <div class="fc-field-group">
+          <div class="fc-field">
+            <label for="fc-dist-mi" class="fc-label">Distance</label>
+            <div class="fc-input-wrap">
+              <input id="fc-dist-mi" type="number" class="input" min="0" step="1" placeholder="100" aria-label="Distance in miles" />
+              <span class="fc-unit">miles</span>
+            </div>
+          </div>
+          <div class="fc-field">
+            <label for="fc-mpg" class="fc-label">Fuel efficiency</label>
+            <div class="fc-input-wrap">
+              <input id="fc-mpg" type="number" class="input" min="0.1" step="0.1" placeholder="35" aria-label="Fuel efficiency in MPG" />
+              <span class="fc-unit">MPG</span>
+            </div>
+          </div>
+          <div class="fc-field">
+            <label for="fc-price-gal" class="fc-label">Fuel price</label>
+            <div class="fc-input-wrap">
+              <span class="fc-prefix">$</span>
+              <input id="fc-price-gal" type="number" class="input fc-has-prefix" min="0" step="0.01" placeholder="3.50" aria-label="Price per gallon" />
+              <span class="fc-unit">/ gallon</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fc-row hidden" id="fc-row-metric">
+        <div class="fc-field-group">
+          <div class="fc-field">
+            <label for="fc-dist-km" class="fc-label">Distance</label>
+            <div class="fc-input-wrap">
+              <input id="fc-dist-km" type="number" class="input" min="0" step="1" placeholder="160" aria-label="Distance in kilometres" />
+              <span class="fc-unit">km</span>
+            </div>
+          </div>
+          <div class="fc-field">
+            <label for="fc-l100" class="fc-label">Fuel efficiency</label>
+            <div class="fc-input-wrap">
+              <input id="fc-l100" type="number" class="input" min="0.1" step="0.1" placeholder="8" aria-label="Fuel efficiency in litres per 100km" />
+              <span class="fc-unit">L/100km</span>
+            </div>
+          </div>
+          <div class="fc-field">
+            <label for="fc-price-l" class="fc-label">Fuel price</label>
+            <div class="fc-input-wrap">
+              <input id="fc-price-l" type="number" class="input" min="0" step="0.01" placeholder="1.60" aria-label="Price per litre" />
+              <span class="fc-unit">/ litre</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div class="calc-card" aria-live="polite" aria-atomic="true">
+      <p class="calc-card-title">Cost estimate</p>
+      <div id="fc-placeholder" style="color:var(--color-text-muted);font-size:var(--text-sm)">Fill in the journey details above.</div>
+      <div id="fc-result" class="hidden">
+        <div class="fc-stats-grid">
+          <div class="fc-stat fc-stat--primary">
+            <p class="fc-stat-value" id="fc-total-cost">—</p>
+            <p class="fc-stat-label">Total fuel cost</p>
+          </div>
+          <div class="fc-stat">
+            <p class="fc-stat-value" id="fc-fuel-used">—</p>
+            <p class="fc-stat-label" id="fc-fuel-unit-label">Fuel used</p>
+          </div>
+          <div class="fc-stat">
+            <p class="fc-stat-value" id="fc-cost-per-100">—</p>
+            <p class="fc-stat-label" id="fc-per-label">Cost per 100 mi</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="mt-8 prose" aria-labelledby="fuel-cost-guide">
+    <h2 id="fuel-cost-guide">Tips to Reduce Fuel Costs</h2>
+    <ul>
+      <li><strong>Maintain correct tyre pressure:</strong> Under-inflated tyres increase rolling resistance and can reduce fuel economy by up to 3%.</li>
+      <li><strong>Drive smoothly:</strong> Aggressive acceleration and hard braking waste fuel. Anticipate traffic and brake gently.</li>
+      <li><strong>Remove roof racks when not in use:</strong> Aerodynamic drag significantly increases fuel consumption at motorway speeds.</li>
+      <li><strong>Use air conditioning wisely:</strong> At low speeds, open windows are more efficient. At high speeds, A/C creates less drag than open windows.</li>
+      <li><strong>Keep up with servicing:</strong> A well-tuned engine burns fuel more efficiently. Air filters, spark plugs, and fresh oil all help.</li>
+    </ul>
+  </section>
+</ToolLayout>
+
+<style>
+  .unit-toggle {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .unit-btn {
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-lg);
+    border: 1.5px solid var(--color-border);
+    background: var(--color-bg-secondary);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+
+  .unit-btn.active {
+    border-color: var(--color-primary);
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+  }
+
+  .fc-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  @media (min-width: 600px) {
+    .fc-field-group { flex-direction: row; }
+    .fc-field { flex: 1; }
+  }
+
+  .fc-label {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 0.375rem;
+  }
+
+  .fc-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--color-bg-secondary);
+  }
+
+  .fc-input-wrap .input {
+    border: none;
+    background: transparent;
+    flex: 1;
+    min-width: 0;
+    border-radius: 0;
+  }
+
+  .fc-input-wrap .input:focus { outline: none; box-shadow: none; }
+  .fc-input-wrap:focus-within { border-color: var(--color-primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 15%, transparent); }
+
+  .fc-unit, .fc-prefix {
+    padding: 0 0.625rem;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    background: var(--color-bg-card);
+    border-left: 1px solid var(--color-border);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
+
+  .fc-prefix {
+    border-left: none;
+    border-right: 1px solid var(--color-border);
+  }
+
+  .fc-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+  }
+
+  @media (max-width: 480px) {
+    .fc-stats-grid { grid-template-columns: 1fr; }
+  }
+
+  .fc-stat {
+    background: var(--color-bg-secondary);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: 1rem 0.75rem;
+    text-align: center;
+  }
+
+  .fc-stat--primary {
+    border-color: var(--color-primary-muted);
+    background: var(--color-primary-light);
+  }
+
+  .fc-stat-value {
+    font-size: var(--text-2xl);
+    font-weight: 800;
+    color: var(--color-text);
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .fc-stat--primary .fc-stat-value { color: var(--color-primary); }
+
+  .fc-stat-label {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 0.375rem;
+  }
+</style>
+
+<script>
+  let unit: 'imperial' | 'metric' = 'imperial';
+
+  const rowImp = document.getElementById('fc-row-imperial')!;
+  const rowMet = document.getElementById('fc-row-metric')!;
+  const btnImp = document.getElementById('btn-imperial')!;
+  const btnMet = document.getElementById('btn-metric')!;
+
+  function setUnit(u: 'imperial' | 'metric') {
+    unit = u;
+    if (u === 'imperial') {
+      rowImp.classList.remove('hidden'); rowMet.classList.add('hidden');
+      btnImp.classList.add('active');   btnMet.classList.remove('active');
+      (document.getElementById('fc-per-label') as HTMLElement).textContent = 'Cost per 100 mi';
+      (document.getElementById('fc-fuel-unit-label') as HTMLElement).textContent = 'Gallons used';
+    } else {
+      rowImp.classList.add('hidden'); rowMet.classList.remove('hidden');
+      btnImp.classList.remove('active'); btnMet.classList.add('active');
+      (document.getElementById('fc-per-label') as HTMLElement).textContent = 'Cost per 100 km';
+      (document.getElementById('fc-fuel-unit-label') as HTMLElement).textContent = 'Litres used';
+    }
+    calculate();
+  }
+
+  btnImp.addEventListener('click', () => setUnit('imperial'));
+  btnMet.addEventListener('click', () => setUnit('metric'));
+
+  function fmt(n: number, dec = 2): string {
+    return n.toLocaleString(undefined, { minimumFractionDigits: dec, maximumFractionDigits: dec });
+  }
+
+  function fmtCurrency(n: number): string {
+    return '$' + fmt(n);
+  }
+
+  function calculate() {
+    const placeholder = document.getElementById('fc-placeholder')!;
+    const result      = document.getElementById('fc-result')!;
+
+    let totalCost = NaN, fuelUsed = NaN, costPer100 = NaN;
+
+    if (unit === 'imperial') {
+      const dist  = parseFloat((document.getElementById('fc-dist-mi') as HTMLInputElement).value);
+      const mpg   = parseFloat((document.getElementById('fc-mpg')     as HTMLInputElement).value);
+      const price = parseFloat((document.getElementById('fc-price-gal') as HTMLInputElement).value);
+      if (dist > 0 && mpg > 0 && price >= 0) {
+        fuelUsed  = dist / mpg;
+        totalCost = fuelUsed * price;
+        costPer100 = (100 / dist) * totalCost;
+      }
+    } else {
+      const dist  = parseFloat((document.getElementById('fc-dist-km')  as HTMLInputElement).value);
+      const l100  = parseFloat((document.getElementById('fc-l100')     as HTMLInputElement).value);
+      const price = parseFloat((document.getElementById('fc-price-l')  as HTMLInputElement).value);
+      if (dist > 0 && l100 > 0 && price >= 0) {
+        fuelUsed  = (dist * l100) / 100;
+        totalCost = fuelUsed * price;
+        costPer100 = (l100 * price);
+      }
+    }
+
+    if (isNaN(totalCost)) {
+      placeholder.classList.remove('hidden'); result.classList.add('hidden');
+      return;
+    }
+
+    placeholder.classList.add('hidden'); result.classList.remove('hidden');
+    (document.getElementById('fc-total-cost') as HTMLElement).textContent = fmtCurrency(totalCost);
+    (document.getElementById('fc-fuel-used')  as HTMLElement).textContent = fmt(fuelUsed, 2);
+    (document.getElementById('fc-cost-per-100') as HTMLElement).textContent = fmtCurrency(costPer100);
+  }
+
+  document.querySelectorAll('#fc-row-imperial input, #fc-row-metric input')
+    .forEach((el) => el.addEventListener('input', calculate));
+
+  calculate();
+</script>
