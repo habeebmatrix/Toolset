@@ -1,0 +1,682 @@
+---
+import ToolLayout from '../../../layouts/ToolLayout.astro';
+import { tools } from '../../../data/tools';
+
+const tool = tools.find((t) => t.slug === 'test-print-page')!;
+
+// Grayscale steps: 0% (white) → 100% (black) in 11 stops
+const graySteps = Array.from({ length: 11 }, (_, i) => {
+  const pct = i * 10;
+  const v = Math.round(255 * (1 - pct / 100));
+  const h = v.toString(16).padStart(2, '0');
+  return { pct, color: `#${h}${h}${h}`, dark: pct >= 50 };
+});
+
+const faqs = [
+  {
+    q: 'What should I look for when reviewing the colour blocks?',
+    a: 'Each block should appear as a clean, solid, vivid colour with no streaking or banding. If cyan, magenta, or yellow appear washed out or wrong, the corresponding ink cartridge may be low or a nozzle may be blocked. Run a print head cleaning cycle and try again.',
+  },
+  {
+    q: 'What does the grayscale strip test?',
+    a: 'The 11-step grayscale strip (0%–100%) tests tonal range. You should see a smooth gradient from pure white on the left to solid black on the right, with clearly distinct steps in between. Merging steps or banding indicates a problem with ink density or print head alignment.',
+  },
+  {
+    q: 'What does the ink coverage section show?',
+    a: 'The four patches test 25%, 50%, 75%, and 100% ink coverage (black only). They help diagnose banding, streaking, and whether your printer can produce consistent mid-tones. Uneven fill in the 25% or 50% patches often means the print head needs cleaning.',
+  },
+  {
+    q: 'What are the alignment marks for?',
+    a: 'The corner registration crosses and centre mark let you verify that the image is positioned correctly on the paper and that the printer is feeding paper straight. If the marks are cut off or skewed, check your paper guides and ensure the paper tray is loaded correctly.',
+  },
+  {
+    q: 'Why does the grid say "1 cm" but look a different size on screen?',
+    a: 'Screen resolution varies, so the on-screen preview is not to scale. When printed, each grid square will be exactly 1 cm × 1 cm. Use a ruler to verify after printing.',
+  },
+  {
+    q: 'How do I print in grayscale?',
+    a: 'Select "Grayscale" mode above before printing — this converts the preview to greyscale. Alternatively, choose "Print in greyscale" or "Black & white" in your printer driver dialog after clicking Print.',
+  },
+  {
+    q: 'How do I save this as a PDF?',
+    a: 'Click the Print button and in the print dialog choose "Save as PDF" (macOS) or "Microsoft Print to PDF" / "Save to PDF" (Windows/Chrome) as the destination printer.',
+  },
+];
+---
+
+<ToolLayout tool={tool} faqs={faqs}>
+
+  <!-- ── Controls (hidden on print) ───────────────────────────── -->
+  <div class="tpp-controls no-print" role="toolbar" aria-label="Print page options">
+
+    <div class="tpp-ctrl-groups">
+      <div class="tpp-ctrl-group">
+        <span class="tpp-ctrl-label" id="tpp-size-label">Paper size</span>
+        <div class="tpp-toggle" role="group" aria-labelledby="tpp-size-label">
+          <button class="tpp-tbtn active" id="tpp-a4" aria-pressed="true">A4</button>
+          <button class="tpp-tbtn" id="tpp-letter" aria-pressed="false">Letter</button>
+        </div>
+      </div>
+
+      <div class="tpp-ctrl-group">
+        <span class="tpp-ctrl-label" id="tpp-mode-label">Colour mode</span>
+        <div class="tpp-toggle" role="group" aria-labelledby="tpp-mode-label">
+          <button class="tpp-tbtn active" id="tpp-color" aria-pressed="true">Colour</button>
+          <button class="tpp-tbtn" id="tpp-gray" aria-pressed="false">Grayscale</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary tpp-print-btn" id="tpp-print-btn" type="button">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="6 9 6 2 18 2 18 9"/>
+        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+        <rect x="6" y="14" width="12" height="8"/>
+      </svg>
+      Print / Save as PDF
+    </button>
+  </div>
+
+  <p class="tpp-preview-label no-print" aria-hidden="true">— Page preview —</p>
+
+  <!-- ── The printable test page ──────────────────────────────── -->
+  <div class="tpp-page" id="tpp-page" aria-label="Printer test page preview">
+
+    <!-- Page header -->
+    <div class="tpp-hdr">
+      <div class="tpp-hdr-left">
+        <div class="tpp-hdr-title">PRINTER TEST PAGE</div>
+        <div class="tpp-hdr-sub" id="tpp-date-label">toolset.dev</div>
+      </div>
+      <div class="tpp-hdr-right">toolset.dev</div>
+    </div>
+
+    <!-- Row 1: Colour blocks + Grayscale -->
+    <div class="tpp-row-2">
+
+      <!-- Colour accuracy -->
+      <div class="tpp-sect">
+        <div class="tpp-sect-title">COLOUR ACCURACY</div>
+        <div class="tpp-color-grid">
+          <div class="tpp-sw" style="background:#00FFFF;"></div>
+          <div class="tpp-sw" style="background:#FF00FF;"></div>
+          <div class="tpp-sw" style="background:#FFFF00;"></div>
+          <div class="tpp-sw" style="background:#000000;"></div>
+          <div class="tpp-sw" style="background:#FF0000;"></div>
+          <div class="tpp-sw" style="background:#00AA44;"></div>
+          <div class="tpp-sw" style="background:#0044EE;"></div>
+          <div class="tpp-sw tpp-sw-outline" style="background:#FFFFFF;"></div>
+        </div>
+        <div class="tpp-color-labels">
+          <span>Cyan</span><span>Mag</span><span>Yellow</span><span>Black</span>
+          <span>Red</span><span>Green</span><span>Blue</span><span>White</span>
+        </div>
+      </div>
+
+      <!-- Grayscale -->
+      <div class="tpp-sect">
+        <div class="tpp-sect-title">GRAYSCALE (0 – 100%)</div>
+        <div class="tpp-gray-bar" role="img" aria-label="Grayscale steps from white to black">
+          {graySteps.map((s) => (
+            <div
+              class="tpp-gray-step"
+              style={`background:${s.color}`}
+              title={`${s.pct}%`}
+            ></div>
+          ))}
+        </div>
+        <div class="tpp-gray-labels">
+          <span>0%</span>
+          <span>50%</span>
+          <span>100%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Ink coverage -->
+    <div class="tpp-sect">
+      <div class="tpp-sect-title">INK COVERAGE</div>
+      <div class="tpp-ink-row">
+        <div class="tpp-ink" style="background:#BFBFBF;">
+          <span class="tpp-ink-label" style="color:#000">25%</span>
+        </div>
+        <div class="tpp-ink" style="background:#808080;">
+          <span class="tpp-ink-label" style="color:#fff">50%</span>
+        </div>
+        <div class="tpp-ink" style="background:#404040;">
+          <span class="tpp-ink-label" style="color:#fff">75%</span>
+        </div>
+        <div class="tpp-ink" style="background:#000000;">
+          <span class="tpp-ink-label" style="color:#fff">100%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 3: Colour gradient -->
+    <div class="tpp-sect">
+      <div class="tpp-sect-title">COLOUR GRADIENT</div>
+      <div class="tpp-gradient" role="img" aria-label="Full spectrum colour gradient"></div>
+    </div>
+
+    <!-- Row 4: Colour temperature -->
+    <div class="tpp-sect">
+      <div class="tpp-sect-title">COLOUR TEMPERATURE & GREY BALANCE</div>
+      <div class="tpp-temp-row">
+        <div class="tpp-temp" style="background:#FFF5E6;">
+          <span class="tpp-temp-label" style="color:#7a5c3a;">Warm White</span>
+        </div>
+        <div class="tpp-temp" style="background:#FAFAFA;">
+          <span class="tpp-temp-label" style="color:#555;">Neutral White</span>
+        </div>
+        <div class="tpp-temp" style="background:#EEF3FF;">
+          <span class="tpp-temp-label" style="color:#3a4e7a;">Cool White</span>
+        </div>
+        <div class="tpp-temp" style="background:#8A7F78;">
+          <span class="tpp-temp-label" style="color:#fff;">Warm Grey</span>
+        </div>
+        <div class="tpp-temp" style="background:#808080;">
+          <span class="tpp-temp-label" style="color:#fff;">Mid Grey</span>
+        </div>
+        <div class="tpp-temp" style="background:#788090;">
+          <span class="tpp-temp-label" style="color:#fff;">Cool Grey</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 5: Text samples -->
+    <div class="tpp-sect">
+      <div class="tpp-sect-title">TEXT LEGIBILITY</div>
+      <div class="tpp-text">
+        <div class="tpp-t-xl">AaBbCcDdEeFfGg 0123456789</div>
+        <div class="tpp-t-lg">The quick brown fox jumps over the lazy dog.</div>
+        <div class="tpp-t-md">Regular (11pt): The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs.</div>
+        <div class="tpp-t-sm tpp-italic">Italic (9pt): The quick brown fox jumps over the lazy dog. 0123456789 @#$%^&*()</div>
+        <div class="tpp-t-xs">Small (7pt): The quick brown fox jumps over the lazy dog. Minimum legibility test. 0123456789 !@#$%^&*()</div>
+        <div class="tpp-t-xxs">Fine print (6pt): The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs. Testing absolute minimum size.</div>
+      </div>
+    </div>
+
+    <!-- Row 6: Alignment & Grid -->
+    <div class="tpp-sect">
+      <div class="tpp-sect-title">ALIGNMENT &amp; GRID (1 cm squares)</div>
+      <div class="tpp-align-wrap">
+        <div class="tpp-grid-box" role="img" aria-label="Alignment grid with corner registration marks">
+          <!-- Corner registration marks -->
+          <div class="tpp-reg tpp-reg-tl" aria-hidden="true"></div>
+          <div class="tpp-reg tpp-reg-tr" aria-hidden="true"></div>
+          <div class="tpp-reg tpp-reg-bl" aria-hidden="true"></div>
+          <div class="tpp-reg tpp-reg-br" aria-hidden="true"></div>
+          <!-- Centre crosshair -->
+          <div class="tpp-centre" aria-hidden="true"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page footer -->
+    <div class="tpp-footer">
+      <span>Generated by toolset.dev · Test Print Page</span>
+      <span>Tip: if colours appear faded or streaky, run a print head cleaning cycle.</span>
+    </div>
+
+  </div><!-- /#tpp-page -->
+
+  <!-- Explanation prose -->
+  <section class="mt-8 prose" aria-labelledby="tpp-guide">
+    <h2 id="tpp-guide">How to Use This Test Page</h2>
+    <p>Click <strong>Print / Save as PDF</strong> above to send the test page to your printer or save it as a PDF. For best results, print at 100% scale (no "fit to page" scaling) on plain white paper.</p>
+    <h3>Reading the Results</h3>
+    <ul>
+      <li><strong>Colour blocks:</strong> All 8 colours should be vivid and solid. Faded or missing colours indicate a low or blocked cartridge.</li>
+      <li><strong>Grayscale strip:</strong> Steps should be clearly distinct from white (left) to black (right) with no banding.</li>
+      <li><strong>Ink coverage:</strong> All four grey patches should be even and consistent — no horizontal streaks.</li>
+      <li><strong>Gradient bar:</strong> The rainbow transition should be smooth with no colour cast or visible steps.</li>
+      <li><strong>Colour temperature:</strong> The three "white" patches should look perceptibly different (warm/neutral/cool). If they look identical, your printer may have a colour cast.</li>
+      <li><strong>Text:</strong> All sizes from 28pt down to 6pt should be legible. Fuzzy or broken characters suggest the print resolution is set too low.</li>
+      <li><strong>Grid:</strong> Each square should be exactly 1 cm. Use a ruler to verify. Skewed lines indicate a paper alignment problem.</li>
+    </ul>
+  </section>
+
+</ToolLayout>
+
+<!-- Dynamic @page style (paper size) injected by script -->
+<style id="tpp-paper-style" is:inline></style>
+
+<style>
+  /* ── Screen controls ───────────────────────────────────────── */
+  .tpp-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: var(--color-bg-card);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    margin-bottom: 0.5rem;
+  }
+
+  .tpp-ctrl-groups {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .tpp-ctrl-group {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+
+  .tpp-ctrl-label {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+  }
+
+  .tpp-toggle {
+    display: flex;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  .tpp-tbtn {
+    padding: 0.375rem 0.875rem;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    background: var(--color-bg-secondary);
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+
+  .tpp-tbtn + .tpp-tbtn { border-left: 1.5px solid var(--color-border); }
+
+  .tpp-tbtn.active {
+    background: var(--color-primary);
+    color: #fff;
+  }
+
+  .tpp-print-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+  }
+
+  .tpp-preview-label {
+    text-align: center;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 1.25rem 0 0.75rem;
+  }
+
+  /* ── The paper page (screen preview) ──────────────────────── */
+  .tpp-page {
+    background: #ffffff;
+    color: #000000;
+    border: 1px solid #d1d5db;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.14);
+    padding: 1.25rem 1.5rem 1rem;
+    max-width: 660px;
+    margin: 0 auto 2rem;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 8pt;
+    line-height: 1.3;
+  }
+
+  /* Grayscale mode */
+  .tpp-page.tpp-grayscale { filter: grayscale(1); }
+
+  /* ── Page header ───────────────────────────────────────────── */
+  .tpp-hdr {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.6rem;
+    border-bottom: 2px solid #000;
+  }
+
+  .tpp-hdr-title {
+    font-size: 11pt;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    color: #000;
+  }
+
+  .tpp-hdr-sub {
+    font-size: 7pt;
+    color: #555;
+    margin-top: 2px;
+  }
+
+  .tpp-hdr-right {
+    font-size: 7pt;
+    color: #888;
+    text-align: right;
+  }
+
+  /* ── Section wrapper ───────────────────────────────────────── */
+  .tpp-sect {
+    margin-bottom: 0.55rem;
+  }
+
+  .tpp-sect-title {
+    font-size: 6pt;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #666;
+    text-transform: uppercase;
+    margin-bottom: 0.2rem;
+    padding-bottom: 0.15rem;
+    border-bottom: 1px solid #ddd;
+  }
+
+  /* ── Two column row ────────────────────────────────────────── */
+  .tpp-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 0.55rem;
+  }
+
+  /* ── Colour swatches ───────────────────────────────────────── */
+  .tpp-color-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    height: 2rem;
+  }
+
+  .tpp-sw { border-radius: 2px; }
+  .tpp-sw-outline { border: 1px solid #ccc; }
+
+  .tpp-color-labels {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    margin-top: 2px;
+  }
+
+  .tpp-color-labels span {
+    font-size: 5pt;
+    text-align: center;
+    color: #555;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  /* ── Grayscale ─────────────────────────────────────────────── */
+  .tpp-gray-bar {
+    display: flex;
+    height: 2rem;
+    border-radius: 2px;
+    overflow: hidden;
+    gap: 0;
+  }
+
+  .tpp-gray-step { flex: 1; }
+
+  .tpp-gray-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2px;
+  }
+
+  .tpp-gray-labels span { font-size: 5pt; color: #555; }
+
+  /* ── Ink coverage ──────────────────────────────────────────── */
+  .tpp-ink-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3px;
+    height: 2.2rem;
+  }
+
+  .tpp-ink {
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .tpp-ink-label {
+    font-size: 6pt;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Gradient ──────────────────────────────────────────────── */
+  .tpp-gradient {
+    height: 1.5rem;
+    border-radius: 2px;
+    background: linear-gradient(
+      to right,
+      #FF0000,
+      #FF7F00,
+      #FFFF00,
+      #00FF00,
+      #00FFFF,
+      #0000FF,
+      #8B00FF,
+      #FF0000
+    );
+  }
+
+  /* ── Colour temperature ────────────────────────────────────── */
+  .tpp-temp-row {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 3px;
+    height: 2.2rem;
+  }
+
+  .tpp-temp {
+    border-radius: 2px;
+    border: 1px solid rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .tpp-temp-label {
+    font-size: 5pt;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  /* ── Text ──────────────────────────────────────────────────── */
+  .tpp-text { display: flex; flex-direction: column; gap: 0.1rem; }
+
+  .tpp-t-xl  { font-size: 20pt; font-weight: 900; line-height: 1; letter-spacing: -0.01em; }
+  .tpp-t-lg  { font-size: 13pt; font-weight: 700; line-height: 1.2; }
+  .tpp-t-md  { font-size: 9pt; line-height: 1.35; }
+  .tpp-t-sm  { font-size: 8pt; line-height: 1.35; }
+  .tpp-t-xs  { font-size: 6.5pt; line-height: 1.35; }
+  .tpp-t-xxs { font-size: 5.5pt; line-height: 1.35; color: #222; }
+  .tpp-italic { font-style: italic; }
+
+  /* ── Alignment grid ────────────────────────────────────────── */
+  .tpp-align-wrap { height: 3.5rem; }
+
+  .tpp-grid-box {
+    height: 100%;
+    border: 1px solid #aaa;
+    border-radius: 2px;
+    position: relative;
+    background-color: #fff;
+    background-image:
+      linear-gradient(to right, rgba(0,0,0,0.12) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0,0,0,0.12) 1px, transparent 1px);
+    background-size: 1cm 1cm;
+    overflow: hidden;
+  }
+
+  /* Registration / corner marks */
+  .tpp-reg {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+  }
+
+  .tpp-reg::before,
+  .tpp-reg::after {
+    content: '';
+    position: absolute;
+    background: #000;
+  }
+
+  /* Horizontal arm of cross */
+  .tpp-reg::before { width: 10px; height: 1px; top: 50%; left: 0; transform: translateY(-50%); }
+  /* Vertical arm of cross */
+  .tpp-reg::after  { width: 1px; height: 10px; left: 50%; top: 0; transform: translateX(-50%); }
+
+  .tpp-reg-tl { top: 4px; left: 4px; }
+  .tpp-reg-tr { top: 4px; right: 4px; }
+  .tpp-reg-bl { bottom: 4px; left: 4px; }
+  .tpp-reg-br { bottom: 4px; right: 4px; }
+
+  /* Centre crosshair */
+  .tpp-centre {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 14px; height: 14px;
+    transform: translate(-50%, -50%);
+  }
+
+  .tpp-centre::before,
+  .tpp-centre::after { content: ''; position: absolute; background: #000; }
+  .tpp-centre::before { width: 14px; height: 1px; top: 50%; left: 0; transform: translateY(-50%); }
+  .tpp-centre::after  { width: 1px; height: 14px; left: 50%; top: 0; transform: translateX(-50%); }
+
+  /* ── Page footer ───────────────────────────────────────────── */
+  .tpp-footer {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-top: 0.5rem;
+    padding-top: 0.4rem;
+    border-top: 1px solid #ccc;
+    font-size: 5.5pt;
+    color: #888;
+  }
+
+  /* ── Print styles ──────────────────────────────────────────── */
+  @media print {
+    /* Force background colour printing */
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    /* Hide everything on the page */
+    body * { visibility: hidden !important; }
+
+    /* Reveal only the test page */
+    #tpp-page,
+    #tpp-page * { visibility: visible !important; }
+
+    /* Position the test page to fill the sheet */
+    #tpp-page {
+      position: fixed !important;
+      inset: 0 !important;
+      padding: 0.8cm 1cm 0.6cm !important;
+      margin: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+      max-width: none !important;
+      width: 100% !important;
+      height: 100% !important;
+      overflow: hidden !important;
+      font-size: 8pt !important;
+    }
+
+    /* Remove browser-added margins */
+    @page { margin: 0; }
+
+    /* Make grid background-size use real cm in print */
+    .tpp-grid-box {
+      background-size: 1cm 1cm !important;
+    }
+
+    /* Expand the alignment box to use available space */
+    .tpp-align-wrap { height: 4cm !important; }
+
+    /* Larger text in print to use full paper width */
+    .tpp-t-xl { font-size: 26pt !important; }
+    .tpp-t-lg { font-size: 16pt !important; }
+    .tpp-t-md { font-size: 11pt !important; }
+    .tpp-t-sm { font-size: 9pt !important; }
+    .tpp-t-xs { font-size: 7pt !important; }
+    .tpp-t-xxs { font-size: 6pt !important; }
+  }
+</style>
+
+<script>
+  // Inject date into page header
+  const dateEl = document.getElementById('tpp-date-label')!;
+  dateEl.textContent = new Date().toLocaleDateString('en-GB', {
+    day: 'numeric', month: 'long', year: 'numeric',
+  });
+
+  // Paper size dynamic @page rule
+  const paperStyleEl = document.getElementById('tpp-paper-style') as HTMLStyleElement;
+  let paperSize = 'A4';
+
+  function updatePaperStyle() {
+    paperStyleEl.textContent = `@media print { @page { size: ${paperSize} portrait; } }`;
+  }
+  updatePaperStyle();
+
+  function setActiveBtn(group: NodeListOf<Element>, active: Element) {
+    group.forEach((b) => {
+      b.classList.remove('active');
+      b.setAttribute('aria-pressed', 'false');
+    });
+    active.classList.add('active');
+    active.setAttribute('aria-pressed', 'true');
+  }
+
+  // Paper size buttons
+  const sizeBtns = document.querySelectorAll<HTMLButtonElement>('#tpp-a4, #tpp-letter');
+
+  document.getElementById('tpp-a4')!.addEventListener('click', (e) => {
+    paperSize = 'A4';
+    updatePaperStyle();
+    setActiveBtn(sizeBtns, e.currentTarget as HTMLButtonElement);
+  });
+
+  document.getElementById('tpp-letter')!.addEventListener('click', (e) => {
+    paperSize = 'letter';
+    updatePaperStyle();
+    setActiveBtn(sizeBtns, e.currentTarget as HTMLButtonElement);
+  });
+
+  // Colour mode buttons
+  const modeBtns = document.querySelectorAll<HTMLButtonElement>('#tpp-color, #tpp-gray');
+  const tppPage  = document.getElementById('tpp-page')!;
+
+  document.getElementById('tpp-color')!.addEventListener('click', (e) => {
+    tppPage.classList.remove('tpp-grayscale');
+    setActiveBtn(modeBtns, e.currentTarget as HTMLButtonElement);
+  });
+
+  document.getElementById('tpp-gray')!.addEventListener('click', (e) => {
+    tppPage.classList.add('tpp-grayscale');
+    setActiveBtn(modeBtns, e.currentTarget as HTMLButtonElement);
+  });
+
+  // Print button
+  document.getElementById('tpp-print-btn')!.addEventListener('click', () => {
+    window.print();
+  });
+</script>

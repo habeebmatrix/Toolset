@@ -5,6 +5,7 @@ export type CategorySlug =
   | 'health'
   | 'date-time'
   | 'text'
+  | 'office-design'
   | 'converters'
   | 'developer';
 
@@ -83,6 +84,15 @@ export const categories: Category[] = [
       'Vehicle calculators for every driver. Check tyre safety age, calculate fuel costs, convert pressure units, estimate car depreciation, and plan road trips.',
     icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="2.5"/><circle cx="18.5" cy="17.5" r="2.5"/><path d="M3 17V9l2-4h10l3 4h2a1 1 0 0 1 1 1v7"/><path d="M5 9h13"/></svg>`,
     accentColor: '#B45309',
+  },
+  {
+    slug: 'office-design',
+    name: 'Office & Design',
+    description: 'Test print page, color tools, and office utilities.',
+    longDescription:
+      'Practical tools for the office and creative work. Print test pages, check colours, and get utilities that make everyday tasks easier.',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>`,
+    accentColor: '#1D4ED8',
   },
   {
     slug: 'converters',
@@ -291,6 +301,19 @@ export const tools: Tool[] = [
     category: 'text',
     tags: ['case converter', 'uppercase', 'lowercase', 'title case', 'camelCase'],
     featured: false,
+    isReady: true,
+  },
+  // Office & Design
+  {
+    slug: 'test-print-page',
+    name: 'Test Print Page',
+    shortDescription: 'Print a full test page to check colour, alignment, and text.',
+    description:
+      'A comprehensive printer test page covering colour accuracy, grayscale steps, ink coverage, gradient reproduction, text legibility at multiple sizes, alignment marks, and a 1 cm grid. Works with any printer.',
+    category: 'office-design',
+    tags: ['test print page', 'printer test page', 'print test', 'colour calibration', 'print alignment', 'printer test'],
+    featured: true,
+    isNew: true,
     isReady: true,
   },
   // Converters
