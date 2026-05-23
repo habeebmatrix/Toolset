@@ -2,7 +2,7 @@
 title: "How to Calculate Percentages: The Complete Guide"
 description: "Learn how to calculate percentages, percentage change, and how to add or subtract a percentage from a number — with real-world examples."
 pubDate: 2025-05-01
-author: "Toolset Team"
+author: "Utiltrix Toolkit Team"
 tags: ["percentages", "math", "guide"]
 relatedTools: ["percentage-calculator"]
 featured: true

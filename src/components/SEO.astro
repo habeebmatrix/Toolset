@@ -19,9 +19,9 @@ const {
   noindex = false,
 } = Astro.props;
 
-const site = 'https://toolset.dev';
+const site = 'https://tools.utiltrix.com';
 const canonicalURL = canonical ? new URL(canonical, site).href : new URL(Astro.url.pathname, site).href;
-const fullTitle = title.includes('Toolset') ? title : `${title} | Toolset`;
+const fullTitle = title.includes('Utiltrix Toolkit') ? title : `${title} | Utiltrix Toolkit`;
 const ogImageURL = ogImage.startsWith('http') ? ogImage : new URL(ogImage, site).href;
 
 const jsonLdArray = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
@@ -39,7 +39,7 @@ const jsonLdArray = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 <meta property="og:type" content={ogType} />
 <meta property="og:url" content={canonicalURL} />
 <meta property="og:image" content={ogImageURL} />
-<meta property="og:site_name" content="Toolset" />
+<meta property="og:site_name" content="Utiltrix Toolkit" />
 
 <!-- Twitter Cards -->
 <meta name="twitter:card" content="summary_large_image" />

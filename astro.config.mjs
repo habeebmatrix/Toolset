@@ -2,7 +2,7 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-  site: 'https://toolset.dev',
+  site: 'https://tools.utiltrix.com',
   trailingSlash: 'always',
   compressHTML: true,
   integrations: [

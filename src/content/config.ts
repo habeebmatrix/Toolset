@@ -7,7 +7,7 @@ const blog = defineCollection({
     description: z.string(),
     pubDate: z.coerce.date(),
     updatedDate: z.coerce.date().optional(),
-    author: z.string().default('Toolset Team'),
+    author: z.string().default('Utiltrix Toolkit Team'),
     tags: z.array(z.string()).default([]),
     relatedTools: z.array(z.string()).default([]),
     featured: z.boolean().default(false),

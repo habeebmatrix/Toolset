@@ -23,15 +23,15 @@ const jsonLd: Record<string, unknown>[] = [
     applicationCategory: 'UtilitiesApplication',
     operatingSystem: 'Web',
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-    url: `https://toolset.dev/${tool.category}/${tool.slug}/`,
+    url: `https://tools.utiltrix.com/${tool.category}/${tool.slug}/`,
   },
   {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://toolset.dev/' },
-      { '@type': 'ListItem', position: 2, name: category.name, item: `https://toolset.dev/${category.slug}/` },
-      { '@type': 'ListItem', position: 3, name: tool.name, item: `https://toolset.dev/${tool.category}/${tool.slug}/` },
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://tools.utiltrix.com/' },
+      { '@type': 'ListItem', position: 2, name: category.name, item: `https://tools.utiltrix.com/${category.slug}/` },
+      { '@type': 'ListItem', position: 3, name: tool.name, item: `https://tools.utiltrix.com/${tool.category}/${tool.slug}/` },
     ],
   },
 ];
