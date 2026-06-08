@@ -316,6 +316,17 @@ export const tools: Tool[] = [
     isNew: true,
     isReady: true,
   },
+  {
+    slug: 'gps-speedometer',
+    name: 'GPS Speedometer',
+    shortDescription: 'Real-time speed from your device GPS.',
+    description: 'A live GPS speedometer that shows your current speed as an analog gauge and digital readout. Tracks max speed, average speed, distance travelled, and elapsed time for your journey. Works in any modern browser with location permission.',
+    category: 'automotive',
+    tags: ['speedometer', 'gps speedometer', 'speed tracker', 'car speed', 'real-time speed', 'driving speed', 'speed gauge'],
+    featured: false,
+    isNew: true,
+    isReady: true,
+  },
   // Converters
   {
     slug: 'length-converter',

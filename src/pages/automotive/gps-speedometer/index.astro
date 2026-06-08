@@ -1,0 +1,682 @@
+---
+import ToolLayout from '../../../layouts/ToolLayout.astro';
+import { tools } from '../../../data/tools';
+
+const tool = tools.find((t) => t.slug === 'gps-speedometer')!;
+
+// Pre-compute tick marks: 0, 20, 40 … 200 km/h
+// SVG gauge: center (100, 100), radius 80, arc from 150° to 390° (=30°) going clockwise
+// angle_deg = 150 + 240 * (speed / 200)
+const ticks = Array.from({ length: 11 }, (_, i) => {
+  const speed = i * 20;
+  const a = (150 + 240 * (speed / 200)) * (Math.PI / 180);
+  const major = speed % 40 === 0;
+  const outerR = 80;
+  const innerR = major ? 67 : 72;
+  const labelR = 55;
+  return {
+    speed,
+    mph: Math.round(speed * 0.621371),
+    x1: +(100 + outerR * Math.cos(a)).toFixed(2),
+    y1: +(100 + outerR * Math.sin(a)).toFixed(2),
+    x2: +(100 + innerR * Math.cos(a)).toFixed(2),
+    y2: +(100 + innerR * Math.sin(a)).toFixed(2),
+    lx: +(100 + labelR * Math.cos(a)).toFixed(2),
+    ly: +(100 + labelR * Math.sin(a)).toFixed(2),
+    major,
+  };
+});
+
+const faqs = [
+  {
+    q: 'Why does this tool need location permission?',
+    a: 'The GPS Speedometer uses your device\'s built-in GPS or location services to measure your speed. Your location data is processed entirely in your browser — nothing is sent to any server. You can revoke permission at any time through your browser settings.',
+  },
+  {
+    q: 'How accurate is GPS speed measurement?',
+    a: 'GPS-derived speed is typically accurate to within 0.1–0.5 km/h at steady speeds on open roads. Accuracy drops in tunnels, dense urban canyons, and bad weather. The GPS accuracy indicator (in metres) gives you a live confidence reading — lower is better.',
+  },
+  {
+    q: 'Why is the speed showing zero or not updating?',
+    a: 'Desktop computers and some laptops don\'t have GPS hardware. In that case the browser falls back to Wi-Fi or IP-based positioning, which cannot provide reliable speed. Use the tool on a phone or tablet with GPS. Also, standing still will legitimately show 0 km/h.',
+  },
+  {
+    q: 'Does this work in tunnels or indoors?',
+    a: 'GPS signals are blocked by buildings and tunnels. When you lose the signal the display will show the last known speed and the status will change to "GPS weak". Cellular-assisted GPS (A-GPS) on phones recovers more quickly once you re-emerge.',
+  },
+  {
+    q: 'Will this drain my phone battery?',
+    a: 'Using GPS with high accuracy mode does increase battery consumption — roughly equivalent to using Google Maps for navigation. If you enable the screen wake lock, the display stays on while tracking, which also uses battery. Consider keeping your phone plugged in while driving.',
+  },
+  {
+    q: 'How do I keep the screen on while driving?',
+    a: 'Enable the "Keep screen awake" toggle before starting tracking. This uses the Screen Wake Lock API, supported in Chrome, Edge, and most Android browsers. It is not available in Firefox or Safari as of 2025. If your browser does not support it, the toggle will be hidden automatically.',
+  },
+];
+---
+
+<ToolLayout tool={tool} faqs={faqs}>
+  <div class="calc-cards" role="region" aria-label="GPS Speedometer">
+
+    <!-- Card 1: Controls -->
+    <div class="calc-card">
+      <p class="calc-card-title">Controls</p>
+      <div class="spd-controls">
+        <div class="spd-unit-toggle" role="group" aria-label="Speed unit">
+          <button id="spd-btn-kmh" class="spd-unit-btn active" aria-pressed="true">km/h</button>
+          <button id="spd-btn-mph" class="spd-unit-btn" aria-pressed="false">mph</button>
+        </div>
+
+        <label id="spd-wake-label" class="spd-toggle-row" style="display:none">
+          <span class="spd-toggle-text">Keep screen awake</span>
+          <span class="spd-switch" aria-hidden="true">
+            <input type="checkbox" id="spd-wake-lock" role="switch" aria-label="Keep screen awake while tracking" />
+            <span class="spd-switch-track"></span>
+          </span>
+        </label>
+
+        <div class="spd-btn-row">
+          <button id="spd-start" class="btn btn-primary spd-action-btn">Start</button>
+          <button id="spd-stop" class="btn btn-secondary spd-action-btn" disabled>Stop</button>
+          <button id="spd-reset" class="btn btn-secondary spd-action-btn" disabled>Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Gauge -->
+    <div class="calc-card spd-gauge-card">
+      <div class="spd-gauge-wrap" aria-hidden="true">
+        <svg viewBox="0 0 200 145" class="spd-svg" role="img" aria-label="Speed gauge">
+          <!-- Background arc: 240° from lower-left to lower-right through top -->
+          <path
+            d="M 30.72 140 A 80 80 0 1 1 169.28 140"
+            fill="none"
+            stroke="var(--color-border)"
+            stroke-width="14"
+            stroke-linecap="round"
+          />
+
+          <!-- Progress arc (colored by speed zone) -->
+          <path
+            id="spd-progress-arc"
+            d="M 30.72 140 A 80 80 0 1 1 169.28 140"
+            fill="none"
+            stroke="#059669"
+            stroke-width="14"
+            stroke-linecap="round"
+            stroke-dasharray="335.1"
+            stroke-dashoffset="335.1"
+          />
+
+          <!-- Tick marks -->
+          {ticks.map((t) => (
+            <>
+              <line
+                x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2}
+                stroke="var(--color-text-muted)"
+                stroke-width={t.major ? 2 : 1}
+                stroke-linecap="round"
+              />
+              {t.major && (
+                <text
+                  x={t.lx}
+                  y={t.ly}
+                  text-anchor="middle"
+                  dominant-baseline="middle"
+                  font-size="7"
+                  fill="var(--color-text-muted)"
+                  class="spd-tick-label"
+                  data-kmh={t.speed}
+                  data-mph={t.mph}
+                >
+                  {t.speed}
+                </text>
+              )}
+            </>
+          ))}
+
+          <!-- Needle -->
+          <g id="spd-needle" transform="rotate(150, 100, 100)">
+            <line x1="88" y1="100" x2="174" y2="100" stroke="var(--color-primary)" stroke-width="3" stroke-linecap="round"/>
+          </g>
+
+          <!-- Center hub -->
+          <circle cx="100" cy="100" r="6" fill="var(--color-primary)"/>
+          <circle cx="100" cy="100" r="3" fill="var(--color-bg)"/>
+        </svg>
+      </div>
+
+      <!-- Digital readout -->
+      <div class="spd-digital-wrap" aria-live="polite" aria-atomic="true">
+        <span id="spd-digital" class="spd-digital">0</span>
+        <span id="spd-unit-label" class="spd-unit-label">km/h</span>
+      </div>
+
+      <!-- Status pill -->
+      <div class="spd-status-wrap">
+        <span id="spd-status" class="spd-status spd-status--idle">Tap Start to begin</span>
+      </div>
+    </div>
+
+    <!-- Card 3: Session stats -->
+    <div class="calc-card">
+      <p class="calc-card-title">Session stats</p>
+      <div class="spd-stats-grid">
+        <div class="spd-stat">
+          <span id="stat-max" class="spd-stat-value">—</span>
+          <span class="spd-stat-label">Max speed</span>
+        </div>
+        <div class="spd-stat">
+          <span id="stat-avg" class="spd-stat-value">—</span>
+          <span class="spd-stat-label">Avg speed</span>
+        </div>
+        <div class="spd-stat">
+          <span id="stat-dist" class="spd-stat-value">—</span>
+          <span class="spd-stat-label">Distance</span>
+        </div>
+        <div class="spd-stat">
+          <span id="stat-time" class="spd-stat-value">—</span>
+          <span class="spd-stat-label">Elapsed time</span>
+        </div>
+        <div class="spd-stat">
+          <span id="stat-accuracy" class="spd-stat-value">—</span>
+          <span class="spd-stat-label">GPS accuracy</span>
+        </div>
+        <div class="spd-stat">
+          <span id="stat-heading" class="spd-stat-value">—</span>
+          <span class="spd-stat-label">Heading</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="mt-8 prose" aria-labelledby="spd-guide">
+    <h2 id="spd-guide">Using the GPS Speedometer</h2>
+    <p>Tap <strong>Start</strong> and grant location permission when prompted. Once the GPS signal is acquired you will see your live speed on the dial. The gauge colour changes as you accelerate — green (0–60 km/h), amber (60–100 km/h), and red (100+ km/h).</p>
+    <h3>Tips for best accuracy</h3>
+    <ul>
+      <li>Use on a phone or tablet with a dedicated GPS chip, not a desktop PC.</li>
+      <li>Mount the device with a clear view of the sky for the strongest signal.</li>
+      <li>Allow a few seconds after pressing Start for the GPS to warm up — the first reading may show 0.</li>
+      <li>Enable "Keep screen awake" so the display stays on while you drive.</li>
+    </ul>
+    <h3>Privacy</h3>
+    <p>All calculations happen locally in your browser. No position data, speed, or route information is transmitted anywhere. The location permission is used solely for reading the GPS speed from your device.</p>
+  </section>
+</ToolLayout>
+
+<style>
+  /* ── Gauge wrapper ─────────────────────────────────── */
+  .spd-gauge-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .spd-gauge-wrap {
+    width: 100%;
+    max-width: 280px;
+  }
+
+  .spd-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    overflow: visible;
+  }
+
+  /* ── Digital readout ───────────────────────────────── */
+  .spd-digital-wrap {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    line-height: 1;
+  }
+
+  .spd-digital {
+    font-size: clamp(3rem, 12vw, 5rem);
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text);
+    letter-spacing: -0.02em;
+    font-family: var(--font-mono, monospace);
+  }
+
+  .spd-unit-label {
+    font-size: var(--text-lg);
+    font-weight: 700;
+    color: var(--color-text-muted);
+  }
+
+  /* ── Status pill ───────────────────────────────────── */
+  .spd-status-wrap {
+    min-height: 1.75rem;
+  }
+
+  .spd-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .spd-status::before {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+
+  .spd-status--idle    { background: var(--color-bg-secondary); color: var(--color-text-muted); }
+  .spd-status--waiting { background: #FEF3C7; color: #92400E; }
+  .spd-status--active  { background: #D1FAE5; color: #065F46; }
+  .spd-status--paused  { background: #FEE2E2; color: #991B1B; }
+  .spd-status--error   { background: #FEE2E2; color: #991B1B; }
+
+  [data-theme="dark"] .spd-status--waiting { background: #451A03; color: #FDE68A; }
+  [data-theme="dark"] .spd-status--active  { background: #022C22; color: #6EE7B7; }
+  [data-theme="dark"] .spd-status--paused  { background: #450A0A; color: #FCA5A5; }
+  [data-theme="dark"] .spd-status--error   { background: #450A0A; color: #FCA5A5; }
+
+  /* ── Controls ──────────────────────────────────────── */
+  .spd-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .spd-unit-toggle {
+    display: inline-flex;
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius-lg);
+    padding: 0.25rem;
+    gap: 0.25rem;
+    align-self: flex-start;
+  }
+
+  .spd-unit-btn {
+    padding: 0.375rem 1rem;
+    border-radius: calc(var(--radius-lg) - 2px);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    border: none;
+    background: transparent;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .spd-unit-btn.active {
+    background: var(--color-bg);
+    color: var(--color-primary);
+    box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  }
+
+  .spd-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    cursor: pointer;
+  }
+
+  .spd-toggle-text {
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--color-text);
+  }
+
+  .spd-switch { position: relative; display: inline-block; }
+  .spd-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+
+  .spd-switch-track {
+    display: block;
+    width: 2.5rem;
+    height: 1.375rem;
+    background: var(--color-border);
+    border-radius: 999px;
+    transition: background 0.2s;
+    position: relative;
+  }
+
+  .spd-switch-track::after {
+    content: '';
+    position: absolute;
+    top: 0.1875rem;
+    left: 0.1875rem;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.2s;
+  }
+
+  .spd-switch input:checked ~ .spd-switch-track { background: var(--color-primary); }
+  .spd-switch input:checked ~ .spd-switch-track::after { transform: translateX(1.125rem); }
+
+  .spd-btn-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .spd-action-btn {
+    flex: 1;
+    min-width: 5rem;
+  }
+
+  /* ── Stats grid ────────────────────────────────────── */
+  .spd-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+  }
+
+  @media (max-width: 480px) {
+    .spd-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .spd-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    padding: 0.625rem 0.5rem;
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius-md);
+    text-align: center;
+  }
+
+  .spd-stat-value {
+    font-size: var(--text-xl);
+    font-weight: 800;
+    color: var(--color-text);
+    font-variant-numeric: tabular-nums;
+    font-family: var(--font-mono, monospace);
+    line-height: 1.2;
+  }
+
+  .spd-stat-label {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    font-weight: 500;
+  }
+</style>
+
+<script>
+  // ── Constants ────────────────────────────────────────
+  const ARC_LEN = 335.1;   // 80px * 240° * π/180
+  const MAX_KMH = 200;
+  const KMH_PER_MS = 3.6; // m/s → km/h
+  const MPH_PER_KMH = 0.621371;
+  const EARTH_R = 6371000; // metres
+
+  // ── State ────────────────────────────────────────────
+  let unit: 'kmh' | 'mph' = 'kmh';
+  let watchId: number | null = null;
+  let wakeLock: WakeLockSentinel | null = null;
+  let sessionStart: number | null = null;
+  let timerHandle: ReturnType<typeof setInterval> | null = null;
+  let maxKmh = 0;
+  let totalDistM = 0;
+  let speedSamples: number[] = [];
+  let prevPos: { lat: number; lon: number; ts: number } | null = null;
+  let isTracking = false;
+
+  // ── DOM refs ─────────────────────────────────────────
+  const progressArc  = document.getElementById('spd-progress-arc')!;
+  const needleEl     = document.getElementById('spd-needle')!;
+  const digitalEl    = document.getElementById('spd-digital')!;
+  const unitLabelEl  = document.getElementById('spd-unit-label')!;
+  const statusEl     = document.getElementById('spd-status')!;
+  const btnStart     = document.getElementById('spd-start') as HTMLButtonElement;
+  const btnStop      = document.getElementById('spd-stop') as HTMLButtonElement;
+  const btnReset     = document.getElementById('spd-reset') as HTMLButtonElement;
+  const btnKmh       = document.getElementById('spd-btn-kmh') as HTMLButtonElement;
+  const btnMph       = document.getElementById('spd-btn-mph') as HTMLButtonElement;
+  const wakeLockCb   = document.getElementById('spd-wake-lock') as HTMLInputElement;
+  const wakeLockRow  = document.getElementById('spd-wake-label') as HTMLElement;
+  const statMax      = document.getElementById('stat-max')!;
+  const statAvg      = document.getElementById('stat-avg')!;
+  const statDist     = document.getElementById('stat-dist')!;
+  const statTime     = document.getElementById('stat-time')!;
+  const statAccuracy = document.getElementById('stat-accuracy')!;
+  const statHeading  = document.getElementById('stat-heading')!;
+  const tickLabels   = document.querySelectorAll<SVGTextElement>('.spd-tick-label');
+
+  // ── Wake lock feature detect ─────────────────────────
+  if ('wakeLock' in navigator) {
+    wakeLockRow.style.display = 'flex';
+  }
+
+  // ── Helpers ──────────────────────────────────────────
+  function toDisplay(kmh: number): number {
+    return unit === 'mph' ? +(kmh * MPH_PER_KMH).toFixed(1) : +kmh.toFixed(1);
+  }
+
+  function fmtSpeed(kmh: number): string {
+    const v = toDisplay(kmh);
+    return Number.isFinite(v) ? String(Math.round(v)) : '—';
+  }
+
+  function fmtDist(metres: number): string {
+    if (unit === 'mph') {
+      const miles = metres / 1609.344;
+      return miles >= 1 ? `${miles.toFixed(2)} mi` : `${Math.round(metres * 3.28084)} ft`;
+    }
+    return metres >= 1000 ? `${(metres / 1000).toFixed(2)} km` : `${Math.round(metres)} m`;
+  }
+
+  function fmtTime(ms: number): string {
+    const s = Math.floor(ms / 1000);
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sec = s % 60;
+    if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+    return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+  }
+
+  function haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const φ1 = lat1 * Math.PI / 180;
+    const φ2 = lat2 * Math.PI / 180;
+    const Δφ = (lat2 - lat1) * Math.PI / 180;
+    const Δλ = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(Δφ/2)**2 + Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)**2;
+    return EARTH_R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  function setStatus(text: string, type: 'idle' | 'waiting' | 'active' | 'paused' | 'error') {
+    statusEl.textContent = text;
+    statusEl.className = `spd-status spd-status--${type}`;
+  }
+
+  function updateGauge(speedKmh: number) {
+    // Needle: angle = 150 + 240 * (speed / 200), rotate around (100, 100)
+    const clampedSpeed = Math.min(speedKmh, MAX_KMH);
+    const angle = 150 + 240 * (clampedSpeed / MAX_KMH);
+    needleEl.setAttribute('transform', `rotate(${angle}, 100, 100)`);
+
+    // Progress arc
+    const filled = ARC_LEN * (clampedSpeed / MAX_KMH);
+    progressArc.style.strokeDashoffset = String(ARC_LEN - filled);
+    const color = speedKmh < 60 ? '#059669' : speedKmh < 100 ? '#D97706' : '#DC2626';
+    progressArc.style.stroke = color;
+
+    // Digital
+    digitalEl.textContent = fmtSpeed(speedKmh);
+  }
+
+  function updateStats() {
+    if (maxKmh > 0) statMax.textContent = `${fmtSpeed(maxKmh)} ${unit === 'mph' ? 'mph' : 'km/h'}`;
+    const avg = speedSamples.length > 0 ? speedSamples.reduce((a, b) => a + b, 0) / speedSamples.length : 0;
+    if (avg > 0) statAvg.textContent = `${fmtSpeed(avg)} ${unit === 'mph' ? 'mph' : 'km/h'}`;
+    if (totalDistM > 0) statDist.textContent = fmtDist(totalDistM);
+    if (sessionStart != null) statTime.textContent = fmtTime(Date.now() - sessionStart);
+  }
+
+  function updateTickLabels() {
+    tickLabels.forEach((el) => {
+      const v = unit === 'mph' ? Number(el.dataset.mph) : Number(el.dataset.kmh);
+      el.textContent = String(v);
+    });
+    unitLabelEl.textContent = unit === 'kmh' ? 'km/h' : 'mph';
+  }
+
+  // ── Geolocation callbacks ─────────────────────────────
+  function onPosition(pos: GeolocationPosition) {
+    const { latitude: lat, longitude: lon, speed, accuracy, heading } = pos.coords;
+    const ts = pos.timestamp;
+
+    // Speed in km/h
+    let speedKmh: number;
+    if (speed != null && speed >= 0) {
+      speedKmh = speed * KMH_PER_MS;
+    } else if (prevPos) {
+      const dist = haversine(prevPos.lat, prevPos.lon, lat, lon);
+      const dt = (ts - prevPos.ts) / 1000;
+      speedKmh = dt > 0 ? (dist / dt) * KMH_PER_MS : 0;
+    } else {
+      speedKmh = 0;
+    }
+
+    // Distance
+    if (prevPos) {
+      totalDistM += haversine(prevPos.lat, prevPos.lon, lat, lon);
+    }
+    prevPos = { lat, lon, ts };
+
+    // Max & samples
+    if (speedKmh > maxKmh) maxKmh = speedKmh;
+    speedSamples.push(speedKmh);
+
+    // GPS accuracy
+    statAccuracy.textContent = accuracy != null ? `±${Math.round(accuracy)} m` : '—';
+
+    // Heading
+    if (heading != null && speed != null && speed > 0.5) {
+      const dirs = ['N','NE','E','SE','S','SW','W','NW'];
+      const dir = dirs[Math.round(heading / 45) % 8];
+      statHeading.textContent = `${Math.round(heading)}° ${dir}`;
+    }
+
+    updateGauge(speedKmh);
+    updateStats();
+    setStatus('Tracking', 'active');
+  }
+
+  function onError(err: GeolocationPositionError) {
+    const msgs: Record<number, string> = {
+      1: 'Location permission denied',
+      2: 'No GPS signal',
+      3: 'GPS signal weak — retrying…',
+    };
+    setStatus(msgs[err.code] ?? 'GPS unavailable', 'error');
+  }
+
+  // ── Actions ──────────────────────────────────────────
+  async function startTracking() {
+    if (!navigator.geolocation) {
+      setStatus('Geolocation not supported by this browser', 'error');
+      return;
+    }
+
+    isTracking = true;
+    sessionStart = sessionStart ?? Date.now();
+    setStatus('Waiting for GPS…', 'waiting');
+    btnStart.disabled = true;
+    btnStop.disabled = false;
+    btnReset.disabled = false;
+
+    watchId = navigator.geolocation.watchPosition(onPosition, onError, {
+      enableHighAccuracy: true,
+      maximumAge: 1000,
+      timeout: 10000,
+    });
+
+    timerHandle = setInterval(updateStats, 1000);
+
+    // Wake lock
+    if (wakeLockCb.checked && 'wakeLock' in navigator) {
+      try {
+        wakeLock = await (navigator as any).wakeLock.request('screen');
+        wakeLock!.addEventListener('release', () => { wakeLock = null; });
+      } catch (_) { /* unsupported or denied */ }
+    }
+  }
+
+  function stopTracking() {
+    if (watchId != null) {
+      navigator.geolocation.clearWatch(watchId);
+      watchId = null;
+    }
+    if (timerHandle != null) {
+      clearInterval(timerHandle);
+      timerHandle = null;
+    }
+    if (wakeLock) {
+      wakeLock.release();
+      wakeLock = null;
+    }
+    isTracking = false;
+    btnStart.disabled = false;
+    btnStop.disabled = true;
+    setStatus('Paused', 'paused');
+    updateGauge(0);
+    digitalEl.textContent = '0';
+  }
+
+  function resetSession() {
+    stopTracking();
+    maxKmh = 0;
+    totalDistM = 0;
+    speedSamples = [];
+    prevPos = null;
+    sessionStart = null;
+    statMax.textContent = '—';
+    statAvg.textContent = '—';
+    statDist.textContent = '—';
+    statTime.textContent = '—';
+    statAccuracy.textContent = '—';
+    statHeading.textContent = '—';
+    btnReset.disabled = true;
+    setStatus('Tap Start to begin', 'idle');
+  }
+
+  // ── Event listeners ───────────────────────────────────
+  btnStart.addEventListener('click', startTracking);
+  btnStop.addEventListener('click', stopTracking);
+  btnReset.addEventListener('click', resetSession);
+
+  btnKmh.addEventListener('click', () => {
+    unit = 'kmh';
+    btnKmh.classList.add('active'); btnKmh.setAttribute('aria-pressed', 'true');
+    btnMph.classList.remove('active'); btnMph.setAttribute('aria-pressed', 'false');
+    updateTickLabels();
+    updateStats();
+  });
+
+  btnMph.addEventListener('click', () => {
+    unit = 'mph';
+    btnMph.classList.add('active'); btnMph.setAttribute('aria-pressed', 'true');
+    btnKmh.classList.remove('active'); btnKmh.setAttribute('aria-pressed', 'false');
+    updateTickLabels();
+    updateStats();
+  });
+
+  // Re-request wake lock if page becomes visible again after it was released
+  document.addEventListener('visibilitychange', async () => {
+    if (wakeLockCb.checked && document.visibilityState === 'visible' && wakeLock == null && isTracking) {
+      try {
+        wakeLock = await (navigator as any).wakeLock.request('screen');
+        wakeLock!.addEventListener('release', () => { wakeLock = null; });
+      } catch (_) { /* ignore */ }
+    }
+  });
+</script>
