@@ -1,0 +1,511 @@
+---
+import ToolLayout from '../../../layouts/ToolLayout.astro';
+import { tools } from '../../../data/tools';
+
+const tool = tools.find((t) => t.slug === 'mortgage-calculator')!;
+
+const faqs = [
+  {
+    q: 'How is a monthly mortgage payment calculated?',
+    a: 'The principal and interest portion uses the standard amortisation formula: M = P × [i(1+i)^n] / [(1+i)^n − 1], where P is the loan amount (home price minus down payment), i is the monthly interest rate (annual rate ÷ 12 ÷ 100), and n is the total number of monthly payments. Property tax, home insurance, HOA fees, and PMI are then added on top.',
+  },
+  {
+    q: 'What does PITI mean?',
+    a: 'PITI stands for Principal, Interest, Taxes, and Insurance — the four components most lenders include when assessing affordability. This calculator shows all four separately, plus HOA dues and PMI, so you see the true total monthly cost rather than just the loan repayment.',
+  },
+  {
+    q: 'How much should my down payment be?',
+    a: 'A 20% down payment is the common benchmark because it usually removes the requirement for private mortgage insurance (PMI) and secures better interest rates. Many loan programmes allow far less — some as low as 3–5% — but a smaller down payment means a larger loan, higher monthly payments, more total interest, and typically PMI until you reach 20% equity.',
+  },
+  {
+    q: 'Why does most of my early payment go to interest?',
+    a: 'Interest is charged on the outstanding balance, which is at its highest at the start of the loan. In the first year of a typical 30-year mortgage, roughly 75–85% of each payment goes to interest. As the balance falls, the interest portion shrinks and more of each identical payment goes to principal — this is why the amortisation curve is so lopsided early on.',
+  },
+  {
+    q: 'What is PMI and when does it stop?',
+    a: 'Private mortgage insurance protects the lender when your down payment is under 20%. It is typically 0.3–1.5% of the loan amount per year. In most jurisdictions it can be cancelled once your loan balance drops to 80% of the original home value, and it usually terminates automatically at 78%. This calculator drops PMI from the schedule at the 80% threshold.',
+  },
+  {
+    q: 'How much interest will I save by paying extra?',
+    a: 'Any extra payment goes straight to principal, which reduces every future interest charge. On a 30-year mortgage, even one extra payment per year commonly shortens the term by four to six years and saves a substantial share of total interest. Compare scenarios by shortening the loan term in this calculator.',
+  },
+  {
+    q: 'Does this calculator work for any currency?',
+    a: 'Yes. All amounts are unitless numbers, so you can enter dollars, pounds, euros, rupees, or any other currency — the maths is identical. Just keep every input in the same currency.',
+  },
+];
+---
+
+<ToolLayout
+  tool={tool}
+  faqs={faqs}
+  seoTitle="Mortgage Calculator — Monthly Payment & Amortisation"
+  seoDescription="Free mortgage payment calculator with down payment, taxes, insurance, HOA and PMI. See your principal vs interest split by year and by month. No signup."
+  alsoKnownAs={['Home loan calculator', 'House payment calculator', 'PITI calculator', 'Mortgage amortisation calculator']}
+>
+  <div class="calc-cards" role="region" aria-label="Mortgage payment calculator">
+
+    <div class="calc-card">
+      <p class="calc-card-title">Loan details</p>
+
+      <div class="mtg-fields">
+        <div class="mtg-field">
+          <label class="mtg-label" for="mtg-price">Home price</label>
+          <input class="input" type="number" id="mtg-price" value="400000" min="1" step="any" aria-label="Home price" />
+        </div>
+
+        <div class="mtg-field">
+          <label class="mtg-label" for="mtg-down">
+            Down payment
+            <button type="button" class="mtg-unit-toggle" id="mtg-down-unit" aria-label="Toggle down payment between amount and percent">%</button>
+          </label>
+          <input class="input" type="number" id="mtg-down" value="20" min="0" step="any" aria-label="Down payment" />
+          <p class="mtg-hint" id="mtg-down-hint">—</p>
+        </div>
+
+        <div class="mtg-field">
+          <label class="mtg-label" for="mtg-rate">Interest rate (% per year)</label>
+          <input class="input" type="number" id="mtg-rate" value="6.5" min="0" max="30" step="any" aria-label="Annual interest rate" />
+        </div>
+
+        <div class="mtg-field">
+          <label class="mtg-label" for="mtg-term">Loan term (years)</label>
+          <input class="input" type="number" id="mtg-term" value="30" min="1" max="50" step="1" aria-label="Loan term in years" />
+        </div>
+      </div>
+
+      <details class="mtg-extras">
+        <summary>Add taxes, insurance &amp; fees (optional)</summary>
+        <div class="mtg-fields" style="margin-top:1rem">
+          <div class="mtg-field">
+            <label class="mtg-label" for="mtg-tax">Property tax (per year)</label>
+            <input class="input" type="number" id="mtg-tax" value="0" min="0" step="any" aria-label="Annual property tax" />
+          </div>
+          <div class="mtg-field">
+            <label class="mtg-label" for="mtg-ins">Home insurance (per year)</label>
+            <input class="input" type="number" id="mtg-ins" value="0" min="0" step="any" aria-label="Annual home insurance" />
+          </div>
+          <div class="mtg-field">
+            <label class="mtg-label" for="mtg-hoa">HOA / service charge (per month)</label>
+            <input class="input" type="number" id="mtg-hoa" value="0" min="0" step="any" aria-label="Monthly HOA fee" />
+          </div>
+          <div class="mtg-field">
+            <label class="mtg-label" for="mtg-pmi">PMI (% of loan per year)</label>
+            <input class="input" type="number" id="mtg-pmi" value="0" min="0" max="5" step="any" aria-label="Annual PMI rate" />
+            <p class="mtg-hint">Applied only while the balance is above 80% of the home price.</p>
+          </div>
+        </div>
+      </details>
+
+      <div class="calc-card-actions">
+        <button class="btn btn-primary" id="mtg-calc">Calculate</button>
+        <button class="btn btn-secondary" id="mtg-reset">Reset</button>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="mtg-results" aria-live="polite" aria-atomic="true">
+      <div class="stats-grid" style="margin-bottom:0.875rem">
+        <div class="stat-card stat-card--primary">
+          <p class="stat-label">Total Monthly Payment</p>
+          <p class="stat-value" id="val-monthly">—</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Loan Amount</p>
+          <p class="stat-value" id="val-loan">—</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Total Interest Paid</p>
+          <p class="stat-value" id="val-interest">—</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Total of All Payments</p>
+          <p class="stat-value" id="val-totalpaid">—</p>
+        </div>
+      </div>
+
+      <!-- Monthly payment breakdown -->
+      <div class="calc-card" style="margin-top:0">
+        <p class="calc-card-title">Monthly payment breakdown</p>
+        <table class="mtg-breakdown" aria-label="Monthly payment breakdown">
+          <tbody id="mtg-breakdown-body"></tbody>
+        </table>
+      </div>
+
+      <!-- Amortisation -->
+      <div class="calc-card" style="margin-top:0.875rem;padding:0;overflow:hidden">
+        <div class="calc-card-head">
+          <p class="calc-card-title" style="margin:0">Amortisation schedule</p>
+          <div class="mtg-view-toggle" role="group" aria-label="Amortisation view">
+            <button class="mtg-view-btn active" id="view-year" aria-pressed="true">By year</button>
+            <button class="mtg-view-btn" id="view-month" aria-pressed="false">By month</button>
+          </div>
+        </div>
+
+        <div class="table-wrap" style="border:none;border-radius:0;margin:0;max-height:28rem;overflow-y:auto">
+          <table class="data-table" id="mtg-amort-table" aria-label="Amortisation schedule">
+            <thead id="mtg-amort-head"></thead>
+            <tbody id="mtg-amort-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="mt-8 prose" aria-labelledby="mtg-guide">
+    <h2 id="mtg-guide">How to Use the Mortgage Calculator</h2>
+    <p>Enter the home price, your down payment, the interest rate, and the loan term. The calculator immediately shows your monthly payment and the full repayment schedule. Open the optional section to add property tax, insurance, HOA dues, and PMI for a realistic total monthly cost.</p>
+
+    <h3>What Makes Up a Mortgage Payment</h3>
+    <table>
+      <thead>
+        <tr><th>Component</th><th>What it covers</th><th>Changes over time?</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Principal</strong></td><td>Repayment of the money you borrowed</td><td>Increases each month</td></tr>
+        <tr><td><strong>Interest</strong></td><td>The lender's charge on the outstanding balance</td><td>Decreases each month</td></tr>
+        <tr><td><strong>Taxes</strong></td><td>Local property tax, usually held in escrow</td><td>Reassessed periodically</td></tr>
+        <tr><td><strong>Insurance</strong></td><td>Buildings / homeowners cover</td><td>Reviewed annually</td></tr>
+        <tr><td><strong>PMI</strong></td><td>Lender protection when equity is under 20%</td><td>Drops off at 80% LTV</td></tr>
+        <tr><td><strong>HOA</strong></td><td>Community or service charges</td><td>Set by the association</td></tr>
+      </tbody>
+    </table>
+    <p>Principal and interest always add up to the same fixed amount each month on a standard repayment mortgage — only the <em>split between them</em> changes. That is exactly what the amortisation schedule above shows.</p>
+
+    <h3>The Amortisation Formula</h3>
+    <p><code>M = P × [i(1 + i)^n] / [(1 + i)^n − 1]</code></p>
+    <p>Where <code>M</code> is the monthly principal-and-interest payment, <code>P</code> is the loan amount, <code>i</code> is the monthly interest rate (annual rate ÷ 1200), and <code>n</code> is the total number of monthly payments (years × 12).</p>
+    <p>Each month the interest charge is <code>balance × i</code>, and everything left over from your payment reduces the principal. Because the balance falls a little every month, the interest charge falls too — and the principal portion grows to compensate.</p>
+
+    <h3>How Your Down Payment Changes Everything</h3>
+    <ul>
+      <li><strong>Lower monthly payment</strong> — a bigger deposit means a smaller loan.</li>
+      <li><strong>Less total interest</strong> — you pay interest on a smaller balance for the whole term.</li>
+      <li><strong>No PMI at 20%</strong> — crossing the 20% threshold typically removes mortgage insurance entirely.</li>
+      <li><strong>Better rates</strong> — lenders often reserve their best pricing for lower loan-to-value ratios.</li>
+    </ul>
+    <p>Toggle the down payment field between a percentage and a fixed amount to compare scenarios quickly.</p>
+
+    <h3>Ways to Pay Less Interest</h3>
+    <ul>
+      <li><strong>Shorten the term.</strong> A 15-year term costs far more per month but can halve the total interest versus 30 years.</li>
+      <li><strong>Pay extra toward principal.</strong> Additional payments early in the loan have the biggest effect, because they eliminate interest on that amount for every remaining month.</li>
+      <li><strong>Improve your rate.</strong> Even a 0.5% reduction saves a meaningful sum over a long term — compare offers before committing.</li>
+      <li><strong>Reach 20% equity sooner</strong> to cancel PMI and redirect that money to principal.</li>
+    </ul>
+
+    <h3>Related Calculators</h3>
+    <ul>
+      <li><a href="/finance/loan-emi-calculator/">Loan EMI Calculator</a> — the same amortisation maths for car, personal, and other loans.</li>
+      <li><a href="/finance/investment-calculator/">Investment Calculator (SIP &amp; Lumpsum)</a> — compare paying down a mortgage against investing the difference.</li>
+      <li><a href="/finance/compound-interest-calculator/">Compound Interest Calculator</a> — understand how compounding works in your favour.</li>
+    </ul>
+
+    <p style="font-size:var(--text-sm);color:var(--color-text-muted)"><em>This calculator provides estimates for planning purposes only. Actual loan terms, fees, escrow requirements, and eligibility are determined by your lender.</em></p>
+  </section>
+</ToolLayout>
+
+<style>
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.875rem;
+  }
+  @media (min-width: 640px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
+
+  .stat-card {
+    background: var(--color-bg-card);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: 1rem 1.125rem;
+  }
+  .stat-card--primary {
+    border-color: var(--color-primary-muted);
+    background: var(--color-primary-light);
+  }
+  .stat-label {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--color-text-muted);
+    margin-bottom: 0.25rem;
+  }
+  .stat-card--primary .stat-label { color: var(--color-primary); }
+  .stat-value {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    color: var(--color-text);
+    word-break: break-all;
+  }
+
+  .mtg-fields {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  @media (min-width: 560px) { .mtg-fields { grid-template-columns: repeat(2, 1fr); } }
+
+  .mtg-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 0.375rem;
+  }
+
+  .mtg-unit-toggle {
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-secondary);
+    color: var(--color-primary);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    min-width: 2.75rem;
+  }
+  .mtg-unit-toggle:hover { border-color: var(--color-primary); }
+
+  .mtg-hint {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    margin-top: 0.3125rem;
+  }
+
+  .mtg-extras {
+    margin-top: 1.25rem;
+    border-top: 1px solid var(--color-border);
+    padding-top: 1rem;
+  }
+  .mtg-extras summary {
+    cursor: pointer;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-primary);
+  }
+
+  .mtg-breakdown { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+  .mtg-breakdown td { padding: 0.5rem 0; border-bottom: 1px solid var(--color-border); }
+  .mtg-breakdown td:last-child { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .mtg-breakdown tr:last-child td {
+    border-bottom: none;
+    border-top: 2px solid var(--color-border);
+    padding-top: 0.75rem;
+    font-weight: 800;
+    color: var(--color-primary);
+  }
+  .mtg-breakdown tr:last-child td:first-child { font-weight: 800; }
+
+  .calc-card-head {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .mtg-view-toggle {
+    display: inline-flex;
+    background: var(--color-bg-secondary);
+    padding: 0.25rem;
+    border-radius: var(--radius-lg);
+    gap: 0.25rem;
+  }
+  .mtg-view-btn {
+    padding: 0.375rem 0.875rem;
+    border: none;
+    background: transparent;
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    border-radius: calc(var(--radius-lg) - 2px);
+    cursor: pointer;
+  }
+  .mtg-view-btn.active {
+    background: var(--color-bg-card);
+    color: var(--color-primary);
+    box-shadow: 0 1px 3px rgba(0,0,0,.1);
+  }
+
+  .mtg-year-row { background: var(--color-bg-secondary); font-weight: 700; }
+</style>
+
+<script>
+  const $ = (id: string) => document.getElementById(id)!;
+  const numOf = (id: string) => parseFloat(($(id) as HTMLInputElement).value) || 0;
+
+  let downIsPercent = true;
+  let view: 'year' | 'month' = 'year';
+
+  interface Row { period: number; payment: number; principal: number; interest: number; balance: number; }
+  let monthlyRows: Row[] = [];
+
+  function fmt(n: number): string {
+    return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function fmt0(n: number): string {
+    return Math.round(n).toLocaleString('en-US');
+  }
+
+  function calculate() {
+    const price = numOf('mtg-price');
+    const rate = numOf('mtg-rate');
+    const term = numOf('mtg-term');
+    if (price <= 0 || term <= 0 || rate < 0) return;
+
+    // Down payment can be entered as a percentage or an absolute amount
+    const downRaw = numOf('mtg-down');
+    const downAmount = downIsPercent ? price * (downRaw / 100) : downRaw;
+    const downPct = price > 0 ? (downAmount / price) * 100 : 0;
+
+    if (downAmount >= price) {
+      $('mtg-down-hint').textContent = 'Down payment must be less than the home price.';
+      return;
+    }
+    $('mtg-down-hint').textContent = downIsPercent
+      ? `= ${fmt0(downAmount)} (${downPct.toFixed(1)}% of price)`
+      : `= ${downPct.toFixed(1)}% of price`;
+
+    const loan = price - downAmount;
+    const i = rate / 1200;
+    const n = Math.round(term * 12);
+
+    const pi = i === 0 ? loan / n : (loan * i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1);
+
+    const monthlyTax = numOf('mtg-tax') / 12;
+    const monthlyIns = numOf('mtg-ins') / 12;
+    const monthlyHoa = numOf('mtg-hoa');
+    const pmiRate = numOf('mtg-pmi') / 100;
+    // PMI applies only while the balance sits above 80% of the home price
+    const pmiMonthly = pmiRate > 0 && loan / price > 0.8 ? (loan * pmiRate) / 12 : 0;
+
+    const totalMonthly = pi + monthlyTax + monthlyIns + monthlyHoa + pmiMonthly;
+
+    // Build the month-by-month schedule
+    monthlyRows = [];
+    let balance = loan;
+    let totalInterest = 0;
+    for (let m = 1; m <= n; m++) {
+      const interest = balance * i;
+      let principal = pi - interest;
+      if (m === n) principal = balance; // absorb rounding drift on the final payment
+      balance = Math.max(0, balance - principal);
+      totalInterest += interest;
+      monthlyRows.push({ period: m, payment: principal + interest, principal, interest, balance });
+    }
+
+    $('val-monthly').textContent = fmt(totalMonthly);
+    $('val-loan').textContent = fmt0(loan);
+    $('val-interest').textContent = fmt0(totalInterest);
+    $('val-totalpaid').textContent = fmt0(loan + totalInterest);
+
+    // Payment breakdown rows
+    const rows: [string, number][] = [['Principal & interest', pi]];
+    if (monthlyTax > 0) rows.push(['Property tax', monthlyTax]);
+    if (monthlyIns > 0) rows.push(['Home insurance', monthlyIns]);
+    if (pmiMonthly > 0) rows.push(['PMI', pmiMonthly]);
+    if (monthlyHoa > 0) rows.push(['HOA / service charge', monthlyHoa]);
+    rows.push(['Total monthly payment', totalMonthly]);
+
+    $('mtg-breakdown-body').innerHTML = rows
+      .map(([label, v]) => `<tr><td>${label}</td><td>${fmt(v)}</td></tr>`)
+      .join('');
+
+    renderSchedule();
+  }
+
+  function renderSchedule() {
+    const head = $('mtg-amort-head');
+    const body = $('mtg-amort-body');
+    if (monthlyRows.length === 0) return;
+
+    if (view === 'month') {
+      head.innerHTML =
+        '<tr><th>Month</th><th>Payment</th><th>Principal</th><th>Interest</th><th>Balance</th></tr>';
+      body.innerHTML = monthlyRows
+        .map(
+          (r) =>
+            `<tr><td>${r.period}</td><td>${fmt(r.payment)}</td><td>${fmt(r.principal)}</td>` +
+            `<td>${fmt(r.interest)}</td><td>${fmt(r.balance)}</td></tr>`
+        )
+        .join('');
+    } else {
+      head.innerHTML =
+        '<tr><th>Year</th><th>Principal paid</th><th>Interest paid</th><th>Total paid</th><th>Ending balance</th></tr>';
+      const out: string[] = [];
+      for (let start = 0; start < monthlyRows.length; start += 12) {
+        const chunk = monthlyRows.slice(start, start + 12);
+        const principal = chunk.reduce((s, r) => s + r.principal, 0);
+        const interest = chunk.reduce((s, r) => s + r.interest, 0);
+        const endBal = chunk[chunk.length - 1].balance;
+        out.push(
+          `<tr class="mtg-year-row"><td>${start / 12 + 1}</td><td>${fmt0(principal)}</td>` +
+            `<td>${fmt0(interest)}</td><td>${fmt0(principal + interest)}</td><td>${fmt0(endBal)}</td></tr>`
+        );
+      }
+      body.innerHTML = out.join('');
+    }
+  }
+
+  function setView(next: 'year' | 'month') {
+    view = next;
+    $('view-year').classList.toggle('active', next === 'year');
+    $('view-year').setAttribute('aria-pressed', String(next === 'year'));
+    $('view-month').classList.toggle('active', next === 'month');
+    $('view-month').setAttribute('aria-pressed', String(next === 'month'));
+    renderSchedule();
+  }
+
+  // Listeners
+  ['mtg-price', 'mtg-down', 'mtg-rate', 'mtg-term', 'mtg-tax', 'mtg-ins', 'mtg-hoa', 'mtg-pmi'].forEach(
+    (id) => $(id).addEventListener('input', calculate)
+  );
+
+  $('mtg-calc').addEventListener('click', calculate);
+  $('view-year').addEventListener('click', () => setView('year'));
+  $('view-month').addEventListener('click', () => setView('month'));
+
+  $('mtg-down-unit').addEventListener('click', () => {
+    const input = $('mtg-down') as HTMLInputElement;
+    const price = numOf('mtg-price');
+    const current = parseFloat(input.value) || 0;
+    // Convert the existing value so the effective down payment stays the same
+    if (downIsPercent) {
+      downIsPercent = false;
+      $('mtg-down-unit').textContent = 'amt';
+      input.value = String(Math.round(price * (current / 100)));
+    } else {
+      downIsPercent = true;
+      $('mtg-down-unit').textContent = '%';
+      input.value = price > 0 ? ((current / price) * 100).toFixed(1) : '0';
+    }
+    calculate();
+  });
+
+  $('mtg-reset').addEventListener('click', () => {
+    const defaults: Record<string, string> = {
+      'mtg-price': '400000',
+      'mtg-down': '20',
+      'mtg-rate': '6.5',
+      'mtg-term': '30',
+      'mtg-tax': '0',
+      'mtg-ins': '0',
+      'mtg-hoa': '0',
+      'mtg-pmi': '0',
+    };
+    Object.entries(defaults).forEach(([id, v]) => (($(id) as HTMLInputElement).value = v));
+    downIsPercent = true;
+    $('mtg-down-unit').textContent = '%';
+    setView('year');
+    calculate();
+  });
+
+  calculate();
+</script>

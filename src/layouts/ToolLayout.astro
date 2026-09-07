@@ -6,9 +6,15 @@ import type { Tool, CategorySlug } from '../data/tools';
 interface Props {
   tool: Tool;
   faqs?: { q: string; a: string }[];
+  /** Override the <title> tag. Keep under ~60 chars and lead with the primary keyword. */
+  seoTitle?: string;
+  /** Override the meta description. Aim for 150–160 chars with a clear benefit. */
+  seoDescription?: string;
+  /** Extra keyword variants surfaced as a "Also known as" line for long-tail search. */
+  alsoKnownAs?: string[];
 }
 
-const { tool, faqs = [] } = Astro.props;
+const { tool, faqs = [], seoTitle, seoDescription, alsoKnownAs = [] } = Astro.props;
 const category = getCategory(tool.category as CategorySlug)!;
 const relatedTools = getToolsByCategory(tool.category as CategorySlug)
   .filter((t) => t.slug !== tool.slug && t.isReady)
@@ -50,8 +56,8 @@ if (faqs.length > 0) {
 ---
 
 <BaseLayout
-  title={`${tool.name} — Free Online ${tool.name}`}
-  description={tool.description}
+  title={seoTitle ?? `${tool.name} — Free Online Calculator`}
+  description={seoDescription ?? tool.description}
   jsonLd={jsonLd}
 >
   <main id="main-content">
@@ -73,6 +79,11 @@ if (faqs.length > 0) {
           <header class="tool-header">
             <h1>{tool.name}</h1>
             <p>{tool.description}</p>
+            {alsoKnownAs.length > 0 && (
+              <p class="tool-aka">
+                <strong>Also known as:</strong> {alsoKnownAs.join(' · ')}
+              </p>
+            )}
           </header>
 
           <slot />
@@ -166,6 +177,15 @@ if (faqs.length > 0) {
       </div>
     </div>
   </main>
+
+  <style>
+    .tool-aka {
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+      margin-top: 0.5rem;
+    }
+    .tool-aka strong { font-weight: 600; }
+  </style>
 
   <script>
     document.querySelectorAll<HTMLButtonElement>('.faq-question').forEach((btn) => {

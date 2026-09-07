@@ -324,6 +324,17 @@ The slug used in the URL is the filename without `.md`. File `how-to-calculate-p
 https://tools.utiltrix.com/sitemap-index.xml
 ```
 
+> ⚠️ **Always rebuild after adding, renaming, or removing a page.** The sitemap is
+> generated from the built output, so a new tool will be missing from the live sitemap
+> until you run `npm run build` and redeploy `dist/`. Never edit the sitemap by hand.
+>
+> Verify a new URL made it in:
+> ```bash
+> npm run sitemap:list | grep <tool-slug>
+> ```
+>
+> Full checklist in [`CLAUDE.md`](CLAUDE.md) and [`TOOLS.md`](TOOLS.md).
+
 ---
 
 ## Adding a New Tool (step-by-step)
